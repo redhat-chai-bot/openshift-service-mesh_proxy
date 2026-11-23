@@ -1,36 +1,7 @@
-From bc2a85e39fd55879b9baed51429c08b27d5514c8 Mon Sep 17 00:00:00 2001
-From: Matt Leon <mattleon@google.com>
-Date: Wed, 16 Jul 2025 16:55:02 -0400
-Subject: [PATCH 1/7] Disable pointer compression
-
-Pointer compression limits the maximum number of WasmVMs.
-
-Signed-off-by: Matt Leon <mattleon@google.com>
----
- BUILD.bazel | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/BUILD.bazel b/BUILD.bazel
-index 3f5a87d054e..0a693b7ee10 100644
---- a/BUILD.bazel
-+++ b/BUILD.bazel
-@@ -292,7 +292,7 @@ v8_int(
- # If no explicit value for v8_enable_pointer_compression, we set it to 'none'.
- v8_string(
-     name = "v8_enable_pointer_compression",
--    default = "none",
-+    default = "False",
- )
- 
- # Default setting for v8_enable_pointer_compression.
--- 
-2.50.0.727.gbf7dc18ff4-goog
-
-
-From 61898e9a63ac89a37261c081b84714cfc400a4b1 Mon Sep 17 00:00:00 2001
+From 5e6b1656b9ee436f9b24a63dc5a4474064767493 Mon Sep 17 00:00:00 2001
 From: Matt Leon <mattleon@google.com>
 Date: Wed, 16 Jul 2025 16:56:31 -0400
-Subject: [PATCH 2/7] Restore _allowlist_function_transition
+Subject: [PATCH 1/7] Restore _allowlist_function_transition
 
 Reverts v8 commit b26554ec368e9553782012c96aa5e99b163eaff2, which removed use of
 _allowlist_function_transition from v8 bazel/defs.bzl, since it is still required
@@ -43,10 +14,10 @@ Signed-off-by: Matt Leon <mattleon@google.com>
  2 files changed, 14 insertions(+)
 
 diff --git a/bazel/defs.bzl b/bazel/defs.bzl
-index 0539ea176ac..14d7ace5e59 100644
+index a7e1e2af786..ba8315bb938 100644
 --- a/bazel/defs.bzl
 +++ b/bazel/defs.bzl
-@@ -485,6 +485,9 @@ _v8_mksnapshot = rule(
+@@ -491,6 +491,9 @@ _v8_mksnapshot = rule(
              cfg = "exec",
          ),
          "target_os": attr.string(mandatory = True),
@@ -79,13 +50,13 @@ index 8c929454840..57336154cf7 100644
      # Making this executable means it works with "$ bazel run".
      executable = True,
 -- 
-2.50.0.727.gbf7dc18ff4-goog
+2.53.0.880.g73c4285caa-goog
 
 
-From 4a6e7158fd4ca48c75c8e33ea15760c9beea1d2f Mon Sep 17 00:00:00 2001
+From af608343068a2a9af1c81747fb665f9bcf3864bf Mon Sep 17 00:00:00 2001
 From: Matt Leon <mattleon@google.com>
 Date: Wed, 16 Jul 2025 16:56:52 -0400
-Subject: [PATCH 3/7] Don't expose Wasm C API (only Wasm C++ API).
+Subject: [PATCH 2/7] Don't expose Wasm C API (only Wasm C++ API).
 
 Signed-off-by: Matt Leon <mattleon@google.com>
 ---
@@ -93,10 +64,10 @@ Signed-off-by: Matt Leon <mattleon@google.com>
  1 file changed, 4 insertions(+)
 
 diff --git a/src/wasm/c-api.cc b/src/wasm/c-api.cc
-index 05e4029f183..d705be96a16 100644
+index e7cf656ade4..660ed06021d 100644
 --- a/src/wasm/c-api.cc
 +++ b/src/wasm/c-api.cc
-@@ -2472,6 +2472,8 @@ WASM_EXPORT auto Instance::exports() const -> ownvec<Extern> {
+@@ -2481,6 +2481,8 @@ WASM_EXPORT auto Instance::exports() const -> ownvec<Extern> {
  
  }  // namespace wasm
  
@@ -105,20 +76,20 @@ index 05e4029f183..d705be96a16 100644
  // BEGIN FILE wasm-c.cc
  
  extern "C" {
-@@ -3518,3 +3520,5 @@ wasm_instance_t* wasm_frame_instance(const wasm_frame_t* frame) {
+@@ -3527,3 +3529,5 @@ wasm_instance_t* wasm_frame_instance(const wasm_frame_t* frame) {
  #undef WASM_DEFINE_SHARABLE_REF
  
  }  // extern "C"
 +
 +#endif
 -- 
-2.50.0.727.gbf7dc18ff4-goog
+2.53.0.880.g73c4285caa-goog
 
 
-From 7b593eb8086dcfe9012d4fa694d622f21dadb731 Mon Sep 17 00:00:00 2001
+From 6d3f9de2b266cf8b4e71d3f87485e60c7b04e6b3 Mon Sep 17 00:00:00 2001
 From: Matt Leon <mattleon@google.com>
 Date: Wed, 16 Jul 2025 16:58:02 -0400
-Subject: [PATCH 4/7] Stub out fast_float for bazel-supplied version
+Subject: [PATCH 3/7] Stub out fast_float for bazel-supplied version
 
 Signed-off-by: Matt Leon <mattleon@google.com>
 ---
@@ -126,10 +97,10 @@ Signed-off-by: Matt Leon <mattleon@google.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/BUILD.bazel b/BUILD.bazel
-index 0a693b7ee10..eafd9dad20c 100644
+index b1a54b2b42c..6c7ee32572e 100644
 --- a/BUILD.bazel
 +++ b/BUILD.bazel
-@@ -4438,7 +4438,7 @@ v8_library(
+@@ -4557,7 +4557,7 @@ v8_library(
      ],
      deps = [
          ":lib_dragonbox",
@@ -139,13 +110,13 @@ index 0a693b7ee10..eafd9dad20c 100644
          ":simdutf",
          ":v8_libbase",
 -- 
-2.50.0.727.gbf7dc18ff4-goog
+2.53.0.880.g73c4285caa-goog
 
 
-From b442d34b12dd513946f509d9db86839ce8aa4d7f Mon Sep 17 00:00:00 2001
+From 848ef537bd70e4ee47c7bf5a06667344f6be5691 Mon Sep 17 00:00:00 2001
 From: Matt Leon <mattleon@google.com>
 Date: Wed, 16 Jul 2025 20:04:05 -0400
-Subject: [PATCH 5/7] Stub out vendored dependencies for bazel-sourced versions
+Subject: [PATCH 4/7] Stub out vendored dependencies for bazel-sourced versions
 
 Signed-off-by: Matt Leon <mattleon@google.com>
 ---
@@ -153,10 +124,10 @@ Signed-off-by: Matt Leon <mattleon@google.com>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/BUILD.bazel b/BUILD.bazel
-index eafd9dad20c..ce36666e36e 100644
+index 6c7ee32572e..48880044776 100644
 --- a/BUILD.bazel
 +++ b/BUILD.bazel
-@@ -4437,10 +4437,10 @@ v8_library(
+@@ -4556,10 +4556,10 @@ v8_library(
          ":noicu/generated_torque_definitions",
      ],
      deps = [
@@ -171,13 +142,13 @@ index eafd9dad20c..ce36666e36e 100644
          "@abseil-cpp//absl/container:btree",
          "@abseil-cpp//absl/container:flat_hash_map",
 -- 
-2.50.0.727.gbf7dc18ff4-goog
+2.53.0.880.g73c4285caa-goog
 
 
-From e0b8f32cc057a3c0875437d5d54d012cabcab458 Mon Sep 17 00:00:00 2001
+From ec77d7b52ef20b7ab00946bae3d65f5f7256e110 Mon Sep 17 00:00:00 2001
 From: Matt Leon <mattleon@google.com>
 Date: Wed, 16 Jul 2025 20:29:10 -0400
-Subject: [PATCH 6/7] Add build flags to make V8 compile with GCC
+Subject: [PATCH 5/7] Add build flags to make V8 compile with GCC
 
 Signed-off-by: Matt Leon <mattleon@google.com>
 ---
@@ -185,13 +156,13 @@ Signed-off-by: Matt Leon <mattleon@google.com>
  1 file changed, 3 insertions(+)
 
 diff --git a/bazel/defs.bzl b/bazel/defs.bzl
-index 14d7ace5e59..c7a48d4e805 100644
+index ba8315bb938..277a07ef63d 100644
 --- a/bazel/defs.bzl
 +++ b/bazel/defs.bzl
-@@ -117,6 +117,9 @@ def _default_args():
-                 "-Wno-implicit-int-float-conversion",
+@@ -123,6 +123,9 @@ def _default_args():
                  "-Wno-deprecated-copy",
                  "-Wno-non-virtual-dtor",
+                 "-Wno-unnecessary-virtual-specifier",
 +                "-Wno-invalid-offsetof",
 +                "-Wno-dangling-pointer",
 +                "-Wno-dangling-reference",
@@ -199,13 +170,13 @@ index 14d7ace5e59..c7a48d4e805 100644
              ],
              "//conditions:default": [],
 -- 
-2.50.0.727.gbf7dc18ff4-goog
+2.53.0.880.g73c4285caa-goog
 
 
-From 7ce2d6bd14b338ab91a8636a8694b9ef180b2f90 Mon Sep 17 00:00:00 2001
+From 55da7da48a8701a7a70a0027d9d90dc39ee6e423 Mon Sep 17 00:00:00 2001
 From: Matt Leon <mattleon@google.com>
 Date: Fri, 18 Jul 2025 17:28:42 -0400
-Subject: [PATCH 7/7] Hack out atomic simd support in V8.
+Subject: [PATCH 6/7] Hack out atomic simd support in V8.
 
 Atomic simdutf requires __cpp_lib_atomic_ref >= 201806, which is only
 supported in clang libc++ 19+. The version of LLVM used in Envoy as of
@@ -230,10 +201,10 @@ Signed-off-by: Matt Leon <mattleon@google.com>
  3 files changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/bazel/defs.bzl b/bazel/defs.bzl
-index c7a48d4e805..a73b3812882 100644
+index 277a07ef63d..0617ecf1607 100644
 --- a/bazel/defs.bzl
 +++ b/bazel/defs.bzl
-@@ -180,7 +180,7 @@ def _default_args():
+@@ -186,7 +186,7 @@ def _default_args():
                  "Advapi32.lib",
              ],
              "@v8//bazel/config:is_macos": ["-pthread"],
@@ -243,10 +214,10 @@ index c7a48d4e805..a73b3812882 100644
              ":should_add_rdynamic": ["-rdynamic"],
              "//conditions:default": [],
 diff --git a/src/builtins/builtins-typed-array.cc b/src/builtins/builtins-typed-array.cc
-index 918cb873481..bc933e8dc1d 100644
+index af505a1f729..8c41631f291 100644
 --- a/src/builtins/builtins-typed-array.cc
 +++ b/src/builtins/builtins-typed-array.cc
-@@ -520,17 +520,21 @@ simdutf::result ArrayBufferSetFromBase64(
+@@ -506,17 +506,21 @@ simdutf::result ArrayBufferSetFromBase64(
      DirectHandle<JSTypedArray> typed_array, size_t& output_length) {
    output_length = array_length;
    simdutf::result simd_result;
@@ -268,19 +239,19 @@ index 918cb873481..bc933e8dc1d 100644
  
    return simd_result;
  }
-@@ -833,15 +837,19 @@ BUILTIN(Uint8ArrayPrototypeToBase64) {
+@@ -840,15 +844,19 @@ BUILTIN(Uint8ArrayPrototypeToBase64) {
      // 11. Return CodePointsToString(outAscii).
  
      size_t simd_result_size;
 +#ifdef WANT_ATOMIC_REF
      if (uint8array->buffer()->is_shared()) {
        simd_result_size = simdutf::atomic_binary_to_base64(
-           std::bit_cast<const char*>(uint8array->DataPtr()), length,
+           reinterpret_cast<const char*>(uint8array->DataPtr()), length,
            reinterpret_cast<char*>(output->GetChars(no_gc)), alphabet);
      } else {
 +#endif
        simd_result_size = simdutf::binary_to_base64(
-           std::bit_cast<const char*>(uint8array->DataPtr()), length,
+           reinterpret_cast<const char*>(uint8array->DataPtr()), length,
            reinterpret_cast<char*>(output->GetChars(no_gc)), alphabet);
 +#ifdef WANT_ATOMIC_REF
      }
@@ -289,7 +260,7 @@ index 918cb873481..bc933e8dc1d 100644
      USE(simd_result_size);
    }
 diff --git a/src/objects/simd.cc b/src/objects/simd.cc
-index 0ef570ceb7d..9217fa76072 100644
+index ef2b8118eec..68115031f1a 100644
 --- a/src/objects/simd.cc
 +++ b/src/objects/simd.cc
 @@ -477,6 +477,7 @@ void Uint8ArrayToHexSlow(const char* bytes, size_t length,
@@ -308,7 +279,7 @@ index 0ef570ceb7d..9217fa76072 100644
  
  inline uint16_t ByteToHex(uint8_t byte) {
    const uint16_t correction = (('a' - '0' - 10) << 8) + ('a' - '0' - 10);
-@@ -645,11 +647,15 @@ Tagged<Object> Uint8ArrayToHex(const char* bytes, size_t length, bool is_shared,
+@@ -647,11 +649,15 @@ Tagged<Object> Uint8ArrayToHex(const char* bytes, size_t length, bool is_shared,
    }
  #endif
  
@@ -324,7 +295,7 @@ index 0ef570ceb7d..9217fa76072 100644
    return *string_output;
  }
  
-@@ -1082,12 +1088,16 @@ bool ArrayBufferFromHex(const base::Vector<T>& input_vector, bool is_shared,
+@@ -1084,12 +1090,16 @@ bool ArrayBufferFromHex(const base::Vector<T>& input_vector, bool is_shared,
    for (uint32_t i = 0; i < output_length * 2; i += 2) {
      result = HandleRemainingHexValues(input_vector, i);
      if (result.has_value()) {
@@ -342,5 +313,284 @@ index 0ef570ceb7d..9217fa76072 100644
        return false;
      }
 -- 
-2.50.0.727.gbf7dc18ff4-goog
+2.53.0.880.g73c4285caa-goog
+
+
+From 0d5cbce2094326250cb6f732ef41436d99ca4f5a Mon Sep 17 00:00:00 2001
+From: Matt Leon <mattleon@google.com>
+Date: Thu, 12 Mar 2026 14:41:30 -0400
+Subject: [PATCH 7/7] Rewrite includes for replaced vendored dependencies
+
+Generated by running the following command:
+
+```
+find . -type f -exec sed -i \
+   -e 's!#include "third_party/simdutf/simdutf.h"!#include "simdutf.h"!' \
+   -e 's!#include "third_party/fp16/src/include/fp16.h"!#include "fp16.h"!' \
+   -e 's!#include "third_party/dragonbox/src/include/dragonbox/dragonbox.h"!#include "dragonbox/dragonbox.h"!' \
+   -e 's!#include "third_party/fast_float/src/include/fast_float/!#include "fast_float/!' {} \;
+```
+
+Signed-off-by: Matt Leon <mattleon@google.com>
+---
+ src/base/float16.h                                       | 2 +-
+ src/builtins/builtins-typed-array.cc                     | 2 +-
+ src/codegen/external-reference.cc                        | 2 +-
+ src/diagnostics/objects-printer.cc                       | 2 +-
+ src/execution/arm64/simulator-logic-arm64.cc             | 2 +-
+ src/numbers/conversions.cc                               | 6 +++---
+ src/objects/elements.cc                                  | 2 +-
+ src/objects/string-inl.h                                 | 2 +-
+ src/objects/string.h                                     | 2 +-
+ src/runtime/runtime-typedarray.cc                        | 2 +-
+ src/strings/unicode-inl.h                                | 2 +-
+ src/strings/unicode.cc                                   | 2 +-
+ src/wasm/wasm-objects-inl.h                              | 2 +-
+ src/wasm/wasm-value.h                                    | 2 +-
+ test/cctest/test-assembler-arm64.cc                      | 2 +-
+ test/cctest/wasm/test-run-wasm-f16.cc                    | 2 +-
+ test/cctest/wasm/wasm-simd-utils.cc                      | 2 +-
+ test/unittests/assembler/macro-assembler-x64-unittest.cc | 2 +-
+ 18 files changed, 20 insertions(+), 20 deletions(-)
+
+diff --git a/src/base/float16.h b/src/base/float16.h
+index 1a51af81484..944017b3044 100644
+--- a/src/base/float16.h
++++ b/src/base/float16.h
+@@ -6,7 +6,7 @@
+ #define V8_BASE_FLOAT16_H_
+ 
+ #include "src/base/memory.h"
+-#include "third_party/fp16/src/include/fp16.h"  // nogncheck
++#include "fp16.h"  // nogncheck
+ 
+ namespace v8 {
+ namespace internal {
+diff --git a/src/builtins/builtins-typed-array.cc b/src/builtins/builtins-typed-array.cc
+index 8c41631f291..26080fb16a1 100644
+--- a/src/builtins/builtins-typed-array.cc
++++ b/src/builtins/builtins-typed-array.cc
+@@ -15,7 +15,7 @@
+ #include "src/objects/objects-inl.h"
+ #include "src/objects/option-utils.h"
+ #include "src/objects/simd.h"
+-#include "third_party/simdutf/simdutf.h"
++#include "simdutf.h"
+ 
+ namespace v8::internal {
+ 
+diff --git a/src/codegen/external-reference.cc b/src/codegen/external-reference.cc
+index ba5b13e5eb0..25858f38193 100644
+--- a/src/codegen/external-reference.cc
++++ b/src/codegen/external-reference.cc
+@@ -45,7 +45,7 @@
+ #include "src/sandbox/testing.h"
+ #include "src/strings/string-search.h"
+ #include "src/strings/unicode-inl.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ #if V8_ENABLE_WEBASSEMBLY
+ #include "src/wasm/wasm-external-refs.h"
+diff --git a/src/diagnostics/objects-printer.cc b/src/diagnostics/objects-printer.cc
+index 190dfc28bc6..f9df61246be 100644
+--- a/src/diagnostics/objects-printer.cc
++++ b/src/diagnostics/objects-printer.cc
+@@ -37,7 +37,7 @@
+ #include "src/snapshot/embedded/embedded-data.h"
+ #include "src/strings/string-stream.h"
+ #include "src/utils/ostreams.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ #if V8_ENABLE_WEBASSEMBLY
+ #include "src/debug/debug-wasm-objects-inl.h"
+diff --git a/src/execution/arm64/simulator-logic-arm64.cc b/src/execution/arm64/simulator-logic-arm64.cc
+index 6a58cce4f80..131fd65f707 100644
+--- a/src/execution/arm64/simulator-logic-arm64.cc
++++ b/src/execution/arm64/simulator-logic-arm64.cc
+@@ -9,7 +9,7 @@
+ #include <cmath>
+ 
+ #include "src/numbers/conversions-inl.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ namespace v8 {
+ namespace internal {
+diff --git a/src/numbers/conversions.cc b/src/numbers/conversions.cc
+index f4b6af0e58c..d2867b4b49f 100644
+--- a/src/numbers/conversions.cc
++++ b/src/numbers/conversions.cc
+@@ -23,9 +23,9 @@
+ #include "src/objects/string-inl.h"
+ #include "src/strings/char-predicates-inl.h"
+ #include "src/utils/allocation.h"
+-#include "third_party/dragonbox/src/include/dragonbox/dragonbox.h"
+-#include "third_party/fast_float/src/include/fast_float/fast_float.h"
+-#include "third_party/fast_float/src/include/fast_float/float_common.h"
++#include "dragonbox/dragonbox.h"
++#include "fast_float/fast_float.h"
++#include "fast_float/float_common.h"
+ 
+ #if defined(_STLP_VENDOR_CSTD)
+ // STLPort doesn't import fpclassify into the std namespace.
+diff --git a/src/objects/elements.cc b/src/objects/elements.cc
+index d1688b04086..52ee37594c4 100644
+--- a/src/objects/elements.cc
++++ b/src/objects/elements.cc
+@@ -28,7 +28,7 @@
+ #include "src/objects/slots-atomic-inl.h"
+ #include "src/objects/slots.h"
+ #include "src/utils/utils.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ // Each concrete ElementsAccessor can handle exactly one ElementsKind,
+ // several abstract ElementsAccessor classes are used to allow sharing
+diff --git a/src/objects/string-inl.h b/src/objects/string-inl.h
+index c42e53f94db..cc2078e8190 100644
+--- a/src/objects/string-inl.h
++++ b/src/objects/string-inl.h
+@@ -38,7 +38,7 @@
+ #include "src/torque/runtime-macro-shims.h"
+ #include "src/torque/runtime-support.h"
+ #include "src/utils/utils.h"
+-#include "third_party/simdutf/simdutf.h"
++#include "simdutf.h"
+ 
+ // Has to be the last include (doesn't have include guards):
+ #include "src/objects/object-macros.h"
+diff --git a/src/objects/string.h b/src/objects/string.h
+index c09211a9823..f905cf5ef03 100644
+--- a/src/objects/string.h
++++ b/src/objects/string.h
+@@ -21,7 +21,7 @@
+ #include "src/objects/tagged.h"
+ #include "src/sandbox/external-pointer.h"
+ #include "src/strings/unicode-decoder.h"
+-#include "third_party/simdutf/simdutf.h"
++#include "simdutf.h"
+ 
+ // Has to be the last include (doesn't have include guards):
+ #include "src/objects/object-macros.h"
+diff --git a/src/runtime/runtime-typedarray.cc b/src/runtime/runtime-typedarray.cc
+index efd89acb6b3..56dcee0e9aa 100644
+--- a/src/runtime/runtime-typedarray.cc
++++ b/src/runtime/runtime-typedarray.cc
+@@ -11,7 +11,7 @@
+ #include "src/objects/objects-inl.h"
+ #include "src/runtime/runtime-utils.h"
+ #include "src/runtime/runtime.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ namespace v8 {
+ namespace internal {
+diff --git a/src/strings/unicode-inl.h b/src/strings/unicode-inl.h
+index 25f3d0375e7..0bbf0cb0afc 100644
+--- a/src/strings/unicode-inl.h
++++ b/src/strings/unicode-inl.h
+@@ -10,7 +10,7 @@
+ 
+ #include "src/base/logging.h"
+ #include "src/utils/utils.h"
+-#include "third_party/simdutf/simdutf.h"
++#include "simdutf.h"
+ 
+ namespace unibrow {
+ 
+diff --git a/src/strings/unicode.cc b/src/strings/unicode.cc
+index d213ea68e8a..74687f7463e 100644
+--- a/src/strings/unicode.cc
++++ b/src/strings/unicode.cc
+@@ -22,7 +22,7 @@
+ #endif
+ 
+ #include "hwy/highway.h"
+-#include "third_party/simdutf/simdutf.h"
++#include "simdutf.h"
+ 
+ namespace unibrow {
+ 
+diff --git a/src/wasm/wasm-objects-inl.h b/src/wasm/wasm-objects-inl.h
+index 2c3fbd792b9..b7e7295560c 100644
+--- a/src/wasm/wasm-objects-inl.h
++++ b/src/wasm/wasm-objects-inl.h
+@@ -31,7 +31,7 @@
+ #include "src/roots/roots.h"
+ #include "src/wasm/wasm-code-manager.h"
+ #include "src/wasm/wasm-module.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ #if V8_ENABLE_DRUMBRAKE
+ #include "src/wasm/interpreter/wasm-interpreter-objects.h"
+diff --git a/src/wasm/wasm-value.h b/src/wasm/wasm-value.h
+index 20e71385930..dfcebf92b96 100644
+--- a/src/wasm/wasm-value.h
++++ b/src/wasm/wasm-value.h
+@@ -14,7 +14,7 @@
+ #include "src/handles/handles.h"
+ #include "src/utils/boxed-float.h"
+ #include "src/wasm/value-type.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ namespace v8 {
+ namespace internal {
+diff --git a/test/cctest/test-assembler-arm64.cc b/test/cctest/test-assembler-arm64.cc
+index baf9e144b61..9a7b71f2959 100644
+--- a/test/cctest/test-assembler-arm64.cc
++++ b/test/cctest/test-assembler-arm64.cc
+@@ -45,7 +45,7 @@
+ #include "test/cctest/cctest.h"
+ #include "test/cctest/test-utils-arm64.h"
+ #include "test/common/assembler-tester.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ namespace v8 {
+ namespace internal {
+diff --git a/test/cctest/wasm/test-run-wasm-f16.cc b/test/cctest/wasm/test-run-wasm-f16.cc
+index 0cdb14221a3..3abd03f477a 100644
+--- a/test/cctest/wasm/test-run-wasm-f16.cc
++++ b/test/cctest/wasm/test-run-wasm-f16.cc
+@@ -11,7 +11,7 @@
+ #include "test/cctest/wasm/wasm-simd-utils.h"
+ #include "test/common/wasm/test-signatures.h"
+ #include "test/common/wasm/wasm-macro-gen.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ namespace v8 {
+ namespace internal {
+diff --git a/test/cctest/wasm/wasm-simd-utils.cc b/test/cctest/wasm/wasm-simd-utils.cc
+index 0b8f6b5475e..078ee2df619 100644
+--- a/test/cctest/wasm/wasm-simd-utils.cc
++++ b/test/cctest/wasm/wasm-simd-utils.cc
+@@ -18,7 +18,7 @@
+ #include "test/common/c-signature.h"
+ #include "test/common/value-helper.h"
+ #include "test/common/wasm/wasm-macro-gen.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ namespace v8 {
+ namespace internal {
+diff --git a/test/unittests/assembler/macro-assembler-x64-unittest.cc b/test/unittests/assembler/macro-assembler-x64-unittest.cc
+index a57d1fc7d6b..3fcb7067be0 100644
+--- a/test/unittests/assembler/macro-assembler-x64-unittest.cc
++++ b/test/unittests/assembler/macro-assembler-x64-unittest.cc
+@@ -45,7 +45,7 @@
+ #include "test/common/assembler-tester.h"
+ #include "test/common/value-helper.h"
+ #include "test/unittests/test-utils.h"
+-#include "third_party/fp16/src/include/fp16.h"
++#include "fp16.h"
+ 
+ namespace v8 {
+ namespace internal {
+-- 
+2.53.0.880.g73c4285caa-goog
 

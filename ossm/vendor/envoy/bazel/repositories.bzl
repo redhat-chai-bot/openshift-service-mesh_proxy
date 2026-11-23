@@ -204,6 +204,7 @@ def envoy_dependencies(skip_targets = []):
     _hessian2_codec()
     _nlohmann_json()
     _su_exec()
+    _ubuntu_packages()
     _abseil_cpp()
     _googletest()
     _com_google_protobuf()
@@ -230,7 +231,14 @@ def envoy_dependencies(skip_targets = []):
     _proxy_wasm_cpp_host()
     _emsdk()
     _rules_fuzzing()
-    external_http_archive("proxy_wasm_rust_sdk")
+    external_http_archive(
+        name = "proxy_wasm_rust_sdk",
+        patch_args = ["-p1"],
+        # Declares the import module of the host functions, as proxy-wasm-rust-sdk 0.2.5 does
+        # (proxy-wasm/proxy-wasm-rust-sdk#365). Newer Rust no longer lets wasm targets link with
+        # undefined symbols, so without it every Rust wasm module fails to link.
+        patches = ["@envoy//bazel:proxy_wasm_rust_sdk.patch"],
+    )
     _cel_cpp()
     _perfetto()
     _rules_ruby()
@@ -244,6 +252,7 @@ def envoy_dependencies(skip_targets = []):
 
     external_http_archive("rules_license")
     external_http_archive("rules_pkg")
+    external_http_archive("rules_oci")
     external_http_archive("shellcheck")
 
     external_http_archive(
@@ -703,6 +712,14 @@ def _su_exec():
         build_file = "@envoy//bazel/external:su-exec.BUILD",
     )
 
+# The package archives (`.deb`), as their control and data archives.
+def _ubuntu_packages():
+    for package in ["ca_certificates", "openssl_amd64", "openssl_arm64", "tzdata"]:
+        external_http_archive(
+            name = "ubuntu_jammy_%s" % package,
+            build_file_content = """exports_files(["control.tar.zst", "data.tar.zst"])""",
+        )
+
 def _googletest():
     external_http_archive(
         "googletest",
@@ -911,10 +928,7 @@ def _proxy_wasm_cpp_host():
     external_http_archive(
         name = "proxy_wasm_cpp_host",
         patch_args = ["-p1"],
-        patches = [
-            "@envoy//bazel:proxy_wasm_cpp_host.patch",
-            "@envoy//bazel:proxy_wasm_cpp_host-s390x.patch",
-        ],
+        patches = ["@envoy//bazel:proxy_wasm_cpp_host.patch"],
         repo_mapping = {"@com_google_absl": "@abseil-cpp"},
     )
 
@@ -984,8 +998,7 @@ def _toolchains_llvm():
 def _wasmtime():
     external_http_archive(
         name = "wasmtime",
-        build_file = "@proxy_wasm_cpp_host//:bazel/external/wasmtime.BUILD",
-        repo_mapping = {"@com_google_absl": "@abseil-cpp"},
+        build_file = "@envoy//bazel/external:wasmtime.BUILD",
     )
 
 def _dlb():

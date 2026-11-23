@@ -232,8 +232,37 @@ def _pwd_flags_fsanitize_ignorelist(args):
             res.append(arg)
     return res
 
+def _pwd_flags_toolchain_dirs(args):
+    """Prefix execroot-relative paths of `-idirafter` and `-B` with ${pwd}.
+
+    These are how a toolchain that sets its own search paths (eg a hermetic GCC) gives them: the
+    path either joined to the flag, or as the argument after `-idirafter`.
+
+    Args:
+        args (list): List of tool arguments.
+
+    Returns:
+        list: The modified argument list.
+    """
+    res = []
+    fix_next_arg = False
+    for arg in args:
+        fixed = arg
+        if fix_next_arg:
+            if not paths.is_absolute(arg) and not arg.startswith("$"):
+                fixed = "${{pwd}}/{}".format(arg)
+        else:
+            for flag in ("-idirafter", "-B"):
+                path = arg[len(flag):]
+                if arg.startswith(flag) and "/" in path and not paths.is_absolute(path) and not path.startswith("$"):
+                    fixed = "{}${{pwd}}/{}".format(flag, path)
+                    break
+        res.append(fixed)
+        fix_next_arg = arg == "-idirafter"
+    return res
+
 def _pwd_flags(args):
-    return _pwd_flags_fsanitize_ignorelist(_pwd_flags_isystem(_pwd_flags_bindir(_pwd_flags_sysroot(args))))
+    return _pwd_flags_toolchain_dirs(_pwd_flags_fsanitize_ignorelist(_pwd_flags_isystem(_pwd_flags_bindir(_pwd_flags_sysroot(args)))))
 
 def _feature_enabled(ctx, feature_name, default = False):
     """Check if a feature is enabled.

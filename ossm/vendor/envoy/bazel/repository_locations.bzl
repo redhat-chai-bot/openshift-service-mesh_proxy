@@ -46,10 +46,10 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         urls = ["https://github.com/bazelbuild/buildtools/archive/v{version}.tar.gz"],
     ),
     envoy_toolshed = dict(
-        version = "0.4.13.post0",
-        sha256 = "0485886f4d2aa3b666540e752d7a2e8eed9b79f6840f8f1cfad3b41f135cdb76",
-        strip_prefix = "toolshed-bazel-v{version}",
-        urls = ["https://github.com/envoyproxy/toolshed/releases/download/bazel-v{version}/toolshed-bazel-v{version}.tar.gz"],
+        version = "0.4.13.post7",
+        sha256 = "023986ee9d53890b1da47d6dbbb74adc9c12583567a935de044b64b663212a5b",
+        strip_prefix = "toolshed-bazel-v{version}/bazel",
+        urls = ["https://github.com/envoyproxy/toolshed/archive/bazel-v{version}.tar.gz"],
     ),
     rules_fuzzing = dict(
         # Patch contains workaround for https://github.com/bazelbuild/rules_python/issues/1221
@@ -116,8 +116,8 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         urls = ["https://github.com/google/perfetto/releases/download/v{version}/perfetto-cpp-sdk-src.zip"],
     ),
     c_ares = dict(
-        version = "1.34.6",
-        sha256 = "912dd7cc3b3e8a79c52fd7fb9c0f4ecf0aaa73e45efda880266a2d6e26b84ef5",
+        version = "1.34.9",
+        sha256 = "9364b70a12eb59a06830fb488d9357f90100dff0d98b23ea3593a183d43e6f2f",
         strip_prefix = "c-ares-{version}",
         urls = ["https://github.com/c-ares/c-ares/releases/download/v{version}/c-ares-{version}.tar.gz"],
     ),
@@ -422,6 +422,28 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         strip_prefix = "su-exec-{version}",
         urls = ["https://github.com/ncopa/su-exec/archive/v{version}.tar.gz"],
     ),
+    # Packages for the ubuntu container images (`//distribution/docker`), from an Ubuntu snapshot.
+    # Only these packages are installed: their dependencies are in the base image.
+    ubuntu_jammy_ca_certificates = dict(
+        version = "20260816ubuntu0.22.04.2",
+        sha256 = "f99e8375d35bdde4800d4842df777be3dafe38bca4d178429fa929de200bf821",
+        urls = ["https://snapshot.ubuntu.com/ubuntu/20261113T000000Z/pool/main/c/ca-certificates/ca-certificates_{version}_all.deb"],
+    ),
+    ubuntu_jammy_openssl_amd64 = dict(
+        version = "3.0.2-0ubuntu1.30",
+        sha256 = "a5b9484a287aba47096fa9ea9821c5c98cf95b8dd726786e7c3a3311fb8eb3b4",
+        urls = ["https://snapshot.ubuntu.com/ubuntu/20261113T000000Z/pool/main/o/openssl/openssl_{version}_amd64.deb"],
+    ),
+    ubuntu_jammy_openssl_arm64 = dict(
+        version = "3.0.2-0ubuntu1.30",
+        sha256 = "6a4d2300bc6a40d8948a1cdc31a45fc1b4ff4d526bca606be4f40c5162b4a2ca",
+        urls = ["https://snapshot.ubuntu.com/ubuntu/20261113T000000Z/pool/main/o/openssl/openssl_{version}_arm64.deb"],
+    ),
+    ubuntu_jammy_tzdata = dict(
+        version = "2026e-0ubuntu0.22.04.1",
+        sha256 = "9d57d34f323fdb52cdf458b80f5705026ae599497f59bde8e9d7ca514ec73540",
+        urls = ["https://snapshot.ubuntu.com/ubuntu/20261113T000000Z/pool/main/t/tzdata/tzdata_{version}_all.deb"],
+    ),
     googletest = dict(
         version = "1.17.0",
         sha256 = "65fab701d9829d38cb77c14acdc431d2108bfdbf8979e40eb8ae567edf10b27c",
@@ -469,8 +491,8 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         urls = ["https://github.com/opencomputeproject/ocp-diag-core/archive/{version}.zip"],
     ),
     io_bazel_rules_go = dict(
-        version = "0.60.0",
-        sha256 = "86d3dc8f59d253524f933aaf2f3c05896cb0b605fc35b460c0b4b039996124c6",
+        version = "0.63.0",
+        sha256 = "c3e253237109ab2e2a8d3cb075688b98a6e6fce43d849849648e8e3a84f20d6f",
         urls = ["https://github.com/bazelbuild/rules_go/releases/download/v{version}/rules_go-v{version}.zip"],
     ),
     rules_cc = dict(
@@ -503,6 +525,12 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         strip_prefix = "rules_ruby-{version}",
         urls = ["https://github.com/protocolbuffers/rules_ruby/archive/{version}.tar.gz"],
     ),
+    rules_oci = dict(
+        version = "2.2.6",
+        sha256 = "5994ec0e8df92c319ef5da5e1f9b514628ceb8fc5824b4234f2fe635abb8cc2e",
+        strip_prefix = "rules_oci-{version}",
+        urls = ["https://github.com/bazel-contrib/rules_oci/releases/download/v{version}/rules_oci-v{version}.tar.gz"],
+    ),
     rules_pkg = dict(
         version = "1.2.0",
         sha256 = "de9c6411e8f1b45dd67ce2b93e9243731aec37df6d65cc20dcd574d2d0b65d0f",
@@ -522,8 +550,8 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         urls = ["https://github.com/bytecodealliance/wasm-micro-runtime/archive/{version}.tar.gz"],
     ),
     wasmtime = dict(
-        version = "24.0.10",
-        sha256 = "746e9b629ee944d85a6cc1db099d38865f44688099f7330400b073ed68790fd0",
+        version = "49.0.5",
+        sha256 = "64d42519b616f14336e194b8c3d74b355e01ddff49cee9aa1159a8cdd53b37cf",
         strip_prefix = "wasmtime-{version}",
         urls = ["https://github.com/bytecodealliance/wasmtime/archive/v{version}.tar.gz"],
     ),
@@ -626,8 +654,8 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         urls = ["https://github.com/proxy-wasm/proxy-wasm-cpp-sdk/archive/{version}.tar.gz"],
     ),
     proxy_wasm_cpp_host = dict(
-        version = "beb8a4ece9eede4ab21d89d723359607600296d4",
-        sha256 = "dbd2d449fca10c1cd655efe21eee34fe880f4ff5fe7f01562f7829ca8dd4b2bf",
+        version = "f2db56af443571e92a31c0b877106d9ea96e19ef",
+        sha256 = "34dac5bcebf0b156e435bf8dd9bdac5be60b95f967c420c680578d73af28c604",
         strip_prefix = "proxy-wasm-cpp-host-{version}",
         urls = ["https://github.com/proxy-wasm/proxy-wasm-cpp-host/archive/{version}.tar.gz"],
     ),
@@ -648,8 +676,8 @@ REPOSITORY_LOCATIONS_SPEC = dict(
     # May be removable once Envoy upgrades to Bazel 8.0+ which includes this by default.
     # See: https://github.com/envoyproxy/envoy/pull/41172#issuecomment-2365923085
     platforms = dict(
-        version = "1.0.0",
-        sha256 = "852b71bfa15712cec124e4a57179b6bc95d59fdf5052945f5d550e072501a769",
+        version = "1.1.0",
+        sha256 = "324f5381753a610e472f79563d44e2026438195042aae4dc660b8c021f7de7f5",
         strip_prefix = "platforms-{version}",
         urls = [
             "https://github.com/bazelbuild/platforms/archive/{version}.tar.gz",

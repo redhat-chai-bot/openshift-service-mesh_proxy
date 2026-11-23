@@ -28,10 +28,10 @@ load(
 )
 load(
     "//go/private:context.bzl",
-    "CGO_ATTRS",
-    "CGO_FRAGMENTS",
     "CGO_TOOLCHAINS",
     "go_context",
+    "go_rule",
+    "maybe_needs_cc_toolchain",
     "new_go_info",
 )
 load(
@@ -62,10 +62,10 @@ def _go_test_impl(ctx):
 
     go = go_context(
         ctx,
-        include_deprecated_properties = False,
         importpath = ctx.attr.importpath,
         embed = ctx.attr.embed,
         go_context_data = ctx.attr._go_context_data,
+        maybe_needs_cc_toolchain = maybe_needs_cc_toolchain(ctx.attr, go_infos = ctx.attr.deps),
         goos = ctx.attr.goos,
         goarch = ctx.attr.goarch,
     )
@@ -78,6 +78,7 @@ def _go_test_impl(ctx):
         go,
         ctx.attr,
         testfilter = "exclude",
+        include_package_metadata = False,
     )
     internal_archive = go.archive(go, internal_go_info)
     if internal_archive.data._validation_output:
@@ -191,6 +192,7 @@ def _go_test_impl(ctx):
         gc_linkopts = test_gc_linkopts,
         version_file = ctx.version_file,
         info_file = ctx.info_file,
+        link_exec_group = "go_link",
     )
 
     env = {
@@ -237,6 +239,7 @@ def _go_test_impl(ctx):
 _go_test_kwargs = {
     "cfg": go_transition,
     "implementation": _go_test_impl,
+    "provides": [GoArchive],
     "attrs": {
         "data": attr.label_list(
             allow_files = True,
@@ -461,6 +464,10 @@ _go_test_kwargs = {
             """,
         ),
         "_go_context_data": attr.label(default = "//:go_context_data"),
+        "_nogo": attr.label(
+            default = Label("@io_bazel_rules_nogo//:nogo"),
+            cfg = "exec",
+        ),
         "_testmain_additional_deps": attr.label_list(
             providers = [GoInfo],
             default = ["//go/tools/bzltestutil"],
@@ -484,11 +491,14 @@ _go_test_kwargs = {
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
-    } | CGO_ATTRS,
+    },
     "executable": True,
     "test": True,
-    "fragments": CGO_FRAGMENTS,
-    "toolchains": [GO_TOOLCHAIN] + CGO_TOOLCHAINS,
+    "exec_groups": {
+        "go_link": exec_group(
+            toolchains = [GO_TOOLCHAIN] + CGO_TOOLCHAINS,
+        ),
+    },
     "doc": """This builds a set of tests that can be run with `bazel test`.
 
     To run all tests in the workspace, and print output on failure (the
@@ -528,7 +538,7 @@ _go_test_kwargs = {
     """,
 }
 
-go_test = rule(**_go_test_kwargs)
+go_test = go_rule(**_go_test_kwargs)
 
 def _recompile_external_deps(go, external_go_info, internal_archive, library_labels):
     """Recompiles some archives in order to split internal and external tests.
@@ -704,6 +714,7 @@ def _recompile_external_deps(go, external_go_info, internal_archive, library_lab
         # Create a stub GoInfo from the archive data.
         arc_data = label_to_arc_data[label]
         deps = [label_to_archive[d] for d in arc_data._dep_labels]
+        package_metadata = getattr(arc_data, "_package_metadata", None)
         go_info = GoInfo(
             name = arc_data.name,
             label = arc_data.label,
@@ -727,6 +738,7 @@ def _recompile_external_deps(go, external_go_info, internal_archive, library_lab
             copts = list(arc_data._copts),
             cxxopts = list(arc_data._cxxopts),
             clinkopts = list(arc_data._clinkopts),
+            _package_metadata = package_metadata,
         )
 
         # If this archive needs to be recompiled, use go.archive.
@@ -743,10 +755,15 @@ def _recompile_external_deps(go, external_go_info, internal_archive, library_lab
                 transitive = depset(direct = [arc_data], transitive = [a.transitive for a in deps]),
                 x_defs = go_info.x_defs,
                 cgo_deps = depset(transitive = [arc_data._cgo_deps] + [a.cgo_deps for a in deps]),
+                cgo_link_inputs = depset(transitive = [arc_data._cgo_link_inputs] + [a.cgo_link_inputs for a in deps]),
                 cgo_exports = depset(transitive = [a.cgo_exports for a in deps]),
                 runfiles = go_info.runfiles,
                 mode = go.mode,
                 _headers = internal_archive._headers,
+                _package_metadata_files = depset(
+                    direct = [package_metadata] if package_metadata else [],
+                    transitive = [getattr(a, "_package_metadata_files", depset()) for a in deps],
+                ),
             )
         label_to_archive[label] = archive
 

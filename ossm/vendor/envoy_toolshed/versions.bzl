@@ -1,6 +1,6 @@
 SUPPORTED_ARCHES = ["aarch64", "x86_64"]
 
-BINS_RELEASE = "0.2.17"
+BINS_RELEASE = "0.2.34"
 
 LLVM_VERSION = "22.1.8"
 SQ_VERSION = "1.4.0"
@@ -21,15 +21,33 @@ LLVM_DISTRIBUTIONS = {
 }
 
 VERSIONS = {
+    "gcc_toolchain": {
+        "version": "13.4.0",
+        "release": "18082025",
+        "sha256": {
+            "x86_64": "d96071c1b98499afd7b7b56ebd69ad414020edf66e982004acffe7df8aaf7e02",
+            "aarch64": "770cf6bf62bdf78763de526d3a9f5cae4c19f1a3aca0ef8f18b05f1a46d1ffaf",
+        },
+    },
     "cmake": "3.23.2",
+    "hunspell": {
+        "version": "1.7.6",
+        "sha256": "9c650ace31d4d8cc1da925a9507c3de1d50f1a54857af2f72429f517d5d53467",
+    },
+    "dictionary_en": {
+        "version": "4.0.0",
+        "sha256": "160cba5e6c0230d43d70b0c929e498566ff2c3c4bcf840318d98ce28e31ee756",
+    },
     "llvm": LLVM_VERSION,
+    # The version of the prebuilt pigz (built and published from `main`).
+    "pigz": "2.8.bcr.3",
     "sq": SQ_VERSION,
     "v8": V8_VERSION,
     "ninja": "1.12.0",
     "python": "3.12",
     "bins_release": BINS_RELEASE,
-    "msan_libs_sha256": "1ee256506ea5e142a8bdf18b5043c5fa788765a5f1228896f94a6b075baaaa75",
-    "tsan_libs_sha256": "3e0a7c4521a75b5b9c473d50d7fd32a9601c92c5abe8d014ac3cc4b3c915efbf",
+    "msan_libs_sha256": "5538945e7113677fe90ea809bc15e90c4c573370e76eadf9c432b6936776d2e7",
+    "tsan_libs_sha256": "1af4d41cbe88c2c0bbb4611f57edbf8d933b432d501ccba7d4744105d785e81d",
     "libcxx_libs_sha256": {
         "aarch64": "b3bd8dfc1c250d5c2c36de174138ffef9754402b33e54abe9b5efb25982fa2f7",
         "x86_64": "e40f39338ffe561dfa26541557c9e548fc7760db9d99f7b6c5de237b725482aa",
@@ -59,28 +77,42 @@ VERSIONS = {
     # Keys match the platform suffix in artifact names (Linux-X64, Linux-ARM64, macOS-ARM64).
     # Empty strings are placeholders; the release (bazel/prepare) workflow fills them after release.
     "llvm_minimal_sha256": {
-        "Linux-X64": "6cb4cca6df33be00c80fa1639062c973d1cafe4e7ad98a9b4bdf21bf9dec5806",
-        "Linux-ARM64": "9a6cc0a84d524342e578db739b04e8a3875adb40b38887e4e074661e925f8a9c",
-        "macOS-ARM64": "928e51aa7c97fbb8c5c50075118f4b36e36363b1a2c3af2dfef9aea1ef526ade",
+        "Linux-X64": "a12891b93faaf8fc1293db6232bf71fcdade9df10e978fe92dbac78d7379130d",
+        "Linux-ARM64": "a4a8a3545ca213117e9629aa4b0abd6fd1232556109af31b3dacf16b1b59ffa1",
+        "macOS-ARM64": "ca6c644a6d285d52d62bf7cb206d839623668eaf86cdc25bc0a709cd137a2017",
     },
     "sq_sha256": SQ_SHA256,
 
+    # Hunspell prebuilt hashes keyed by the artifact platform suffix (linux-x86_64, linux-aarch64),
+    # from the bins-v* release (built and published from `main`).
+    "hunspell_sha256": {
+        "linux-x86_64": "8a8f5fed83891053b59bc4d01c91d3a87dfe4e7985eb51c7bcc62aa052bca2c1",
+        "linux-aarch64": "fd0b06e7d41d6781ed1531d961cf21a9c8417cf6fdfa9c7be3c303717f2fa99b",
+    },
+    # pigz prebuilt hashes keyed by the artifact platform suffix (linux-x86_64, linux-aarch64),
+    # filled by the release preparation once a bins-v* release publishes the artifacts. Empty, there
+    # is no prebuilt for the platform.
+    "pigz_sha256": {
+        "linux-x86_64": "ea1b320f220005816e4073be6c79988873f47ab47bf1c82e8e1ac56bbfa594e8",
+        "linux-aarch64": "05a3f170340ed7c5de9b4f0ecf06035705441ba71624e6e11e7d4e532d92634d",
+    },
+
     # Glint binary hashes by architecture
     "glint_sha256": {
-        "amd64": "76f79e440f65b1ca9bbf7c0f3f38b7733684820e8765e22a3c68d81526ed300e",
-        "arm64": "85c71c9c3ad8fd83e649560e6d88574ea42f1f73c72d055c8661a82950b35bee",
+        "amd64": "e30984f1a92a36ef6b8ed69a785d3d4eb2fd07cf7cf42c505eca8e089577d712",
+        "arm64": "d623ae06b29fb6c520c251d0c4ee4cacc2f10907eabb91ff9cb679bd93788dc4",
     },
 
     # Wee8 prebuilt hashes by architecture and stdlib ABI flavour.
     # libcxx keeps the legacy unsuffixed artifact name; libstdcxx is suffixed.
     "wee8_sha256": {
         "x86_64": {
-            "libcxx": "fcb7842467db8412971b90b2ad6c602ba4834b3eaa44fe5a175ae22d4cc0c96c",
-            "libstdcxx": "02248a38aeef1103a02dc2d65ef20249d42df7aed812f53f63482cee7babe82f",
+            "libcxx": "ce217d16544fb3fd2cecce3cf872a6ad82902117297b88a223aec5c81bc521df",
+            "libstdcxx": "a08fb4f413e87475051ac1344d7e366281736adefb34d06558722ca70c45bf56",
         },
         "aarch64": {
-            "libcxx": "c1c842e38ade0149eedf6dcd928eb4290cc01be6ebe213f642b161e9f0bb1cdc",
-            "libstdcxx": "",
+            "libcxx": "682d0926e555da2fb33c7dc6dc95f884790fce5bc49fd95ca88a121e857d71a5",
+            "libstdcxx": "7fffaf144e22ebe7c45b4642728d04908c950ec1229069f240d7bd6992097d5c",
         },
     },
 
@@ -90,22 +122,22 @@ VERSIONS = {
     "sysroot_hashes": {
         "2.31": {
             "base": {
-                "amd64": "80b8f218f3d473713550786d9b973d48028af3c5929959fc49148f01ef53de96",
-                "arm64": "242e7e273f1ebc28781bda60108cbd0ce860c8d023d46be76feaf286b1e28af9",
+                "amd64": "51f77aecf20a634bf54f7eed11ca1dd8f7755e51a3454ce9e09102367f077cc2",
+                "arm64": "a3bd95ac86a1e34ff841a59025de3876702ada3dea9cc9136c5e005692c56e7e",
             },
             "13": {
-                "amd64": "cb9e7946e2c67e0111efa9c11a046741c108c7790c61d36dcedde073009974d2",
-                "arm64": "897260aafb61e16815d6c43ee74252dc626467cc97a2b37baf87ddf108d0249b",
+                "amd64": "6ef212981c66c47072710c5cf138a261e4c48e1b9aa231f0bd16fad1e70e7890",
+                "arm64": "81583c5b338a8b323fae8f986714ee3272aea20625d56a1ec92c8af1b41a8f6f",
             },
         },
         "2.28": {
             "base": {
-                "amd64": "3c8df618b8dc3fff647f40c2d5737be79884e8cce219a3546157545f3c5c70db",
-                "arm64": "468e49a783665810216f1d242f7f769b6a3bfbf4b0f2a435befef43b92b1bb5c",
+                "amd64": "5728f6b77b5dfa51190976bea6d8bf23494d9032dacbc132a3c5e2b63eadb7f3",
+                "arm64": "9241d78ce4c0a44363051e14fbc2d27c7795543c637f20a08cda6dbf3a08e3fc",
             },
             "13": {
-                "amd64": "d23c83b8958d800f509455bca451e564060ad78f68edb86366b7d31fd71e668b",
-                "arm64": "d99929c0b0f88006c1cc5a705706ea3582e741de9c7e59b48d32f3dca87222f1",
+                "amd64": "9132c8fd645947784ab3306e12cdc4a697853f2d6223aa53e66222b6943a0f8c",
+                "arm64": "8e1af6cf31d7856344b1442b7fe3cdad720882d43b2e60b63ad8ae008860ee7e",
             },
         },
     },
@@ -160,7 +192,7 @@ VERSIONS = {
         "download_suffix": "Linux-X64",
         "version": LLVM_VERSION,
         "bins_release": BINS_RELEASE,
-        "sha256": "6cb4cca6df33be00c80fa1639062c973d1cafe4e7ad98a9b4bdf21bf9dec5806",
+        "sha256": "a12891b93faaf8fc1293db6232bf71fcdade9df10e978fe92dbac78d7379130d",
         "url": "https://github.com/{repo}/releases/download/bins-v{bins_release}/llvm-minimal-{version}-{download_suffix}.tar.zst",
         "strip_prefix": "llvm-minimal-{version}-{download_suffix}",
     },
@@ -170,7 +202,7 @@ VERSIONS = {
         "download_suffix": "Linux-ARM64",
         "version": LLVM_VERSION,
         "bins_release": BINS_RELEASE,
-        "sha256": "9a6cc0a84d524342e578db739b04e8a3875adb40b38887e4e074661e925f8a9c",
+        "sha256": "a4a8a3545ca213117e9629aa4b0abd6fd1232556109af31b3dacf16b1b59ffa1",
         "url": "https://github.com/{repo}/releases/download/bins-v{bins_release}/llvm-minimal-{version}-{download_suffix}.tar.zst",
         "strip_prefix": "llvm-minimal-{version}-{download_suffix}",
     },
@@ -180,7 +212,7 @@ VERSIONS = {
         "download_suffix": "macOS-ARM64",
         "version": LLVM_VERSION,
         "bins_release": BINS_RELEASE,
-        "sha256": "928e51aa7c97fbb8c5c50075118f4b36e36363b1a2c3af2dfef9aea1ef526ade",
+        "sha256": "ca6c644a6d285d52d62bf7cb206d839623668eaf86cdc25bc0a709cd137a2017",
         "url": "https://github.com/{repo}/releases/download/bins-v{bins_release}/llvm-minimal-{version}-{download_suffix}.tar.zst",
         "strip_prefix": "llvm-minimal-{version}-{download_suffix}",
     },

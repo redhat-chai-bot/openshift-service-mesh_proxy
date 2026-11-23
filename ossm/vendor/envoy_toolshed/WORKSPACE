@@ -6,6 +6,12 @@ load_archives()
 load("//pgp:repositories.bzl", "setup_sq")
 setup_sq()
 
+load("//pigz:repositories.bzl", "load_pigz_toolchains", "setup_pigz")
+setup_pigz()
+
+load("//hunspell:repositories.bzl", "load_hunspell_toolchains", "setup_hunspell")
+setup_hunspell()
+
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
@@ -27,6 +33,9 @@ resolve_dependencies()
 load(":toolchains_llvm.bzl", "setup_llvm_toolchain")
 setup_llvm_toolchain()
 
+load("//toolchains/gcc:repositories.bzl", "setup_gcc_toolchains")
+setup_gcc_toolchains()
+
 load(":toolchains.bzl", "load_toolchains")
 load_toolchains()
 
@@ -34,11 +43,18 @@ load("//pgp:toolchain.bzl", "load_pgp_toolchains")
 register_toolchains("//pgp/test:stub_toolchain")
 load_pgp_toolchains()
 
+load_pigz_toolchains()
+
+load_hunspell_toolchains()
+
 load(":packages.bzl", "load_packages", "load_website_packages")
 load_packages()
 
 load("@toolshed_pip3//:requirements.bzl", "install_deps")
 install_deps()
+
+load("@cve_pip3//:requirements.bzl", cve_install_deps = "install_deps")
+cve_install_deps()
 
 load_website_packages()
 

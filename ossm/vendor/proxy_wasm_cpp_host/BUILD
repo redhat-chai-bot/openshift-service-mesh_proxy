@@ -36,6 +36,7 @@ filegroup(
 cc_library(
     name = "wasm_vm_headers",
     hdrs = [
+        "include/proxy-wasm/bytecode_util.h",
         "include/proxy-wasm/limits.h",
         "include/proxy-wasm/sdk.h",
         "include/proxy-wasm/wasm_vm.h",
@@ -89,6 +90,7 @@ cc_library(
     }),
     deps = [
         ":headers",
+        "@com_google_absl//absl/cleanup",
     ] + select({
         "//bazel:crypto_system": [],
         "//conditions:default": ["@envoy//bazel:crypto"],
@@ -132,8 +134,9 @@ cc_library(
         "PROXY_WASM_HOST_ENGINE_V8",
     ],
     deps = [
+        ":base_lib",
         ":wasm_vm_headers",
-        "@v8//:wee8",
+        "//bazel:wee8_no_pointer_compression",
     ],
 )
 
@@ -190,7 +193,6 @@ cc_library(
     name = "wasmtime_lib",
     srcs = [
         "src/common/types.h",
-        "src/wasmtime/types.h",
         "src/wasmtime/wasmtime.cc",
     ],
     hdrs = ["include/proxy-wasm/wasmtime.h"],
@@ -220,67 +222,9 @@ cc_library(
         ],
     }),
     deps = [
+        ":base_lib",
         ":wasm_vm_headers",
         "@wasmtime//:wasmtime_lib",
-    ],
-)
-
-genrule(
-    name = "prefixed_wasmtime_sources",
-    srcs = [
-        "src/wasmtime/types.h",
-        "src/wasmtime/wasmtime.cc",
-    ],
-    outs = [
-        "src/wasmtime/prefixed_types.h",
-        "src/wasmtime/prefixed_wasmtime.cc",
-    ],
-    cmd = """
-        for file in $(SRCS); do
-           sed -e 's/wasm_/wasmtime_wasm_/g' \
-               -e 's/include\\/wasm.h/include\\/prefixed_wasm.h/g' \
-               -e 's/wasmtime\\/types.h/wasmtime\\/prefixed_types.h/g' \
-           $$file >$(@D)/$$(dirname $$file)/prefixed_$$(basename $$file)
-        done
-        """,
-)
-
-cc_library(
-    name = "prefixed_wasmtime_lib",
-    srcs = [
-        "src/common/types.h",
-        "src/wasmtime/prefixed_types.h",
-        "src/wasmtime/prefixed_wasmtime.cc",
-    ],
-    hdrs = ["include/proxy-wasm/wasmtime.h"],
-    copts = [
-        "-DWASM_API_EXTERN=",
-    ],
-    defines = [
-        "PROXY_WASM_HAS_RUNTIME_WASMTIME",
-        "PROXY_WASM_HOST_ENGINE_WASMTIME",
-    ],
-    # See: https://bytecodealliance.github.io/wasmtime/c-api/
-    linkopts = select({
-        "@platforms//os:macos": [],
-        "@platforms//os:windows": [
-            "ws2_32.lib",
-            "advapi32.lib",
-            "userenv.lib",
-            "ntdll.lib",
-            "shell32.lib",
-            "ole32.lib",
-            "bcrypt.lib",
-        ],
-        "//conditions:default": [
-            "-ldl",
-            "-lm",
-            "-lpthread",
-        ],
-    }),
-    deps = [
-        ":wasm_vm_headers",
-        "@wasmtime//:prefixed_wasmtime_lib",
     ],
 )
 
@@ -298,6 +242,5 @@ cc_library(
         [":wasmedge_lib"],
     ) + proxy_wasm_select_engine_wasmtime(
         [":wasmtime_lib"],
-        [":prefixed_wasmtime_lib"],
     ),
 )
