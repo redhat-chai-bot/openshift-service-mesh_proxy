@@ -164,11 +164,13 @@ c_ares:
   project_name: "c-ares"
   project_desc: "C library for asynchronous DNS requests"
   project_url: "https://c-ares.haxx.se/"
-  release_date: "2025-12-08"
+  release_date: "2026-10-20"
   use_category:
   - dataplane_core
   - controlplane
-  cpe: "cpe:2.3:a:c-ares_project:c-ares:*"
+  # TODO(phlax): add this back when the scanner supports a cpe list
+  # cpe: "cpe:2.3:a:c-ares_project:c-ares:*"
+  cpe: "cpe:2.3:a:c-ares:c-ares:*"
   license: "c-ares"
   license_url: "https://github.com/c-ares/c-ares/blob/cares-{underscore_version}/LICENSE.md"
 
@@ -502,6 +504,46 @@ su_exec:
   license: "MIT"
   license_url: "https://github.com/ncopa/su-exec/blob/v{version}/LICENSE"
 
+ubuntu_jammy_ca_certificates:
+  project_name: "ca-certificates (Ubuntu)"
+  project_desc: "Common CA certificates for the ubuntu container images"
+  project_url: "https://packages.ubuntu.com/jammy"
+  release_date: "2026-11-13"
+  use_category:
+  - other
+  license: "MPL-2.0"
+  license_url: "https://packages.ubuntu.com/jammy"
+
+ubuntu_jammy_openssl_amd64:
+  project_name: "openssl (Ubuntu amd64)"
+  project_desc: "OpenSSL command line tool for the ubuntu container images"
+  project_url: "https://packages.ubuntu.com/jammy"
+  release_date: "2026-11-13"
+  use_category:
+  - other
+  license: "Apache-2.0"
+  license_url: "https://packages.ubuntu.com/jammy"
+
+ubuntu_jammy_openssl_arm64:
+  project_name: "openssl (Ubuntu arm64)"
+  project_desc: "OpenSSL command line tool for the ubuntu container images"
+  project_url: "https://packages.ubuntu.com/jammy"
+  release_date: "2026-11-13"
+  use_category:
+  - other
+  license: "Apache-2.0"
+  license_url: "https://packages.ubuntu.com/jammy"
+
+ubuntu_jammy_tzdata:
+  project_name: "tzdata (Ubuntu)"
+  project_desc: "Time zone data for the ubuntu container images"
+  project_url: "https://packages.ubuntu.com/jammy"
+  release_date: "2026-11-13"
+  use_category:
+  - other
+  license: "Public-Domain"
+  license_url: "https://packages.ubuntu.com/jammy"
+
 nghttp2:
   project_name: "Nghttp2"
   project_desc: "Implementation of HTTP/2 and its header compression algorithm HPACK in C"
@@ -588,7 +630,7 @@ wasmtime:
   project_name: "wasmtime"
   project_desc: "A standalone runtime for WebAssembly"
   project_url: "https://github.com/bytecodealliance/wasmtime"
-  release_date: "2026-06-15"
+  release_date: "2026-10-29"
   use_category:
   - dataplane_ext
   extensions:
@@ -852,7 +894,7 @@ envoy_toolshed:
   project_name: "envoy_toolshed"
   project_desc: "Tooling, libraries, runners and checkers for Envoy proxy's CI"
   project_url: "https://github.com/envoyproxy/toolshed"
-  release_date: "2026-09-29"
+  release_date: "2026-11-19"
   use_category:
   - build
   - controlplane
@@ -1073,7 +1115,7 @@ io_bazel_rules_go:
   project_name: "Go rules for Bazel"
   project_desc: "Bazel rules for the Go language"
   project_url: "https://github.com/bazelbuild/rules_go"
-  release_date: "2026-02-09"
+  release_date: "2026-08-16"
   use_category:
   - build
   - api
@@ -1238,7 +1280,7 @@ platforms:
   project_name: "platforms"
   project_desc: "Constraint values for specifying platforms and toolchains"
   project_url: "https://github.com/bazelbuild/platforms"
-  release_date: "2025-05-27"
+  release_date: "2026-05-01"
   use_category:
   - build
   license: "Apache-2.0"
@@ -1357,6 +1399,16 @@ rules_license:
   - controlplane
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_license/blob/{version}/LICENSE"
+
+rules_oci:
+  project_name: "Bazel rules for OCI containers"
+  project_desc: "Bazel rules for building OCI container images"
+  project_url: "https://github.com/bazel-contrib/rules_oci"
+  release_date: "2025-04-21"
+  use_category:
+  - build
+  license: "Apache-2.0"
+  license_url: "https://github.com/bazel-contrib/rules_oci/blob/v{version}/LICENSE"
 
 rules_pkg:
   project_name: "Packaging rules for Bazel"

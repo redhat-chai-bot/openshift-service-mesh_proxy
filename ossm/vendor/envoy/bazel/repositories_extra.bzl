@@ -2,10 +2,11 @@ load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies")
 load("@com_google_protobuf//bazel/private/oss:proto_bazel_features.bzl", "proto_bazel_features")
 load("@emsdk//:deps.bzl", emsdk_deps = "deps")
 load("@envoy_toolshed//compile:libcxx_libs.bzl", "setup_libcxx_libs")
+load("@envoy_toolshed//hunspell:repositories.bzl", "load_hunspell_toolchains", "setup_hunspell")
 load("@envoy_toolshed//pgp:repositories.bzl", "setup_sq")
 load("@envoy_toolshed//pgp:toolchain.bzl", "load_pgp_toolchains")
+load("@envoy_toolshed//pigz:repositories.bzl", "load_pigz_toolchains", "setup_pigz")
 load("@envoy_toolshed//sysroot:sysroot.bzl", "setup_sysroots")
-load("@proxy_wasm_cpp_host//bazel/cargo/wasmtime/remote:crates.bzl", "crate_repositories")
 load("@rules_cc//cc:extensions.bzl", "compatibility_proxy_repo")
 load("@rules_java//java:rules_java_deps.bzl", java_compatibility_proxy_repo = "compatibility_proxy_repo")
 load("@rules_python//python:repositories.bzl", "py_repositories")
@@ -32,15 +33,28 @@ def envoy_dependencies_extra(
     external_http_archive("sq_linux_arm64")
     setup_sq()
     load_pgp_toolchains()
+    setup_pigz()
+    load_pigz_toolchains()
+    setup_hunspell()
+    load_hunspell_toolchains()
 
     compatibility_proxy_repo()
     java_compatibility_proxy_repo()
     bazel_toolchain_dependencies()
-    setup_libcxx_libs()
+
+    # The libc++ to cross-compile with (eg `ci/do_ci.sh release.multiarch`), of this branch's
+    # LLVM (`bazel/toolchains.bzl`): the bundles have that libc++'s `__config_site`, which has to
+    # match the toolchain's headers. From the last bins release that published them.
+    setup_libcxx_libs(
+        aarch64_sha256 = "9c900495dac5c214d135caab02cfcf01806916a8eeb994687b2815ed38a79831",
+        aarch64_version = "0.1.59",
+        llvm_version = "18.1.8",
+        x86_64_sha256 = "50c7385dd1c17fd3606fa8850cfb1c7d0166ab109e404964f55abd6b508560eb",
+        x86_64_version = "0.1.59",
+    )
     setup_sysroots(glibc_version = glibc_version)
     emsdk_deps()
     raze_fetch_remote_crates()
-    crate_repositories()
     py_repositories()
 
     native.register_toolchains("@rules_python//python/runtime_env_toolchains:all")

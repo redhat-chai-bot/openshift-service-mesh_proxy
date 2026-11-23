@@ -65,6 +65,9 @@ genrule(
     # Undocumented attr to depend on workspace status files.
     # https://github.com/bazelbuild/bazel/issues/4942
     stamp = 1,
+    # A one-line file from the stamp, so new with every commit: locally, rather than queued for
+    # remote execution on the critical path of every stamped link.
+    tags = ["no-remote-exec"],
 )
 
 # For macOS, which doesn't have GNU ld's `--build-id` flag.
@@ -80,6 +83,9 @@ genrule(
     # Undocumented attr to depend on workspace status files.
     # https://github.com/bazelbuild/bazel/issues/4942
     stamp = 1,
+    # A one-line file from the stamp, so new with every commit: locally, rather than queued for
+    # remote execution on the critical path of every stamped link.
+    tags = ["no-remote-exec"],
 )
 
 cc_library(
@@ -206,6 +212,21 @@ config_setting(
 )
 
 config_setting(
+    name = "compile_time_options_build",
+    values = {"define": "ENVOY_CONFIG_COMPILE_TIME_OPTIONS=1"},
+)
+
+config_setting(
+    name = "fuzz_coverage_build",
+    values = {"define": "ENVOY_CONFIG_FUZZ_COVERAGE=1"},
+)
+
+config_setting(
+    name = "openssl_build",
+    flag_values = {":openssl": "True"},
+)
+
+config_setting(
     name = "clang_build",
     flag_values = {
         "@bazel_tools//tools/cpp:compiler": "clang",
@@ -215,6 +236,16 @@ config_setting(
 config_setting(
     name = "clang_pch_build",
     values = {"define": "ENVOY_CLANG_PCH=1"},
+)
+
+config_setting(
+    name = "gcc_requested",
+    flag_values = {":use_gcc": "true"},
+)
+
+bool_flag(
+    name = "use_gcc",
+    build_setting_default = False,
 )
 
 config_setting(
@@ -797,8 +828,41 @@ config_setting(
     define_values = {"engflow_rbe": "true"},
 )
 
+# Set (by `//distribution/binary:compiler.bzl`) for an arm64 build that runs on arm64 workers from
+# another host: what such a build runs from the LLVM distribution has to be the arm64 one
+# (`@llvm_toolchain_arm64_llvm`), not the host's (`@llvm_toolchain_llvm`).
+bool_flag(
+    name = "arm64-workers",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "arm64_workers",
+    constraint_values = ["@platforms//os:linux"],
+    flag_values = {":arm64-workers": "true"},
+    visibility = ["//visibility:public"],
+)
+
+# Set by `ci/do_ci.sh release.multiarch`, which builds both arches from an x64 host: on EngFlow,
+# their actions run on x86_64 workers, whichever arch they target.
+bool_flag(
+    name = "multiarch",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "multiarch_build",
+    flag_values = {":multiarch": "true"},
+)
+
+config_setting(
+    name = "single_arch_build",
+    flag_values = {":multiarch": "false"},
+)
+
 selects.config_setting_group(
-    name = "engflow_rbe_x86_64",
+    name = "engflow_rbe_linux_x86_64",
     match_all = [
         ":engflow_rbe",
         ":linux_x86_64",
@@ -806,10 +870,97 @@ selects.config_setting_group(
 )
 
 selects.config_setting_group(
+    name = "engflow_rbe_multiarch",
+    match_all = [
+        ":engflow_rbe",
+        ":multiarch_build",
+    ],
+)
+
+# EngFlow builds whose actions run on x86_64 workers, which is what the `linux_x64_*` pools are
+# pinned for (`envoy_exec_properties`): x64 builds, and both arches of a multiarch one. A native
+# arm64 build keeps its platform's arm pool.
+selects.config_setting_group(
+    name = "engflow_rbe_x86_64",
+    match_any = [
+        ":engflow_rbe_linux_x86_64",
+        ":engflow_rbe_multiarch",
+    ],
+)
+
+selects.config_setting_group(
+    name = "engflow_rbe_x86_64_asan",
+    match_all = [
+        ":engflow_rbe_x86_64",
+        ":asan_build",
+    ],
+)
+
+selects.config_setting_group(
+    name = "engflow_rbe_x86_64_compile_time_options",
+    match_all = [
+        ":engflow_rbe_x86_64",
+        ":compile_time_options_build",
+    ],
+)
+
+selects.config_setting_group(
+    name = "engflow_rbe_x86_64_coverage",
+    match_all = [
+        ":engflow_rbe_x86_64",
+        ":coverage_build",
+    ],
+)
+
+selects.config_setting_group(
+    name = "engflow_rbe_x86_64_fuzz_coverage",
+    match_all = [
+        ":engflow_rbe_x86_64",
+        ":fuzz_coverage_build",
+    ],
+)
+
+selects.config_setting_group(
+    name = "engflow_rbe_x86_64_gcc",
+    match_all = [
+        ":engflow_rbe_x86_64",
+        ":gcc_build",
+    ],
+)
+
+selects.config_setting_group(
+    name = "engflow_rbe_x86_64_msan",
+    match_all = [
+        ":engflow_rbe_x86_64",
+        ":msan_build",
+    ],
+)
+
+selects.config_setting_group(
+    name = "engflow_rbe_x86_64_openssl",
+    match_all = [
+        ":engflow_rbe_x86_64",
+        ":openssl_build",
+    ],
+)
+
+selects.config_setting_group(
+    name = "engflow_rbe_x86_64_tsan",
+    match_all = [
+        ":engflow_rbe_x86_64",
+        ":tsan_build",
+    ],
+)
+
+# EngFlow builds whose actions run on arm64 workers: native arm64 builds. Not the arm64 half of a
+# multiarch build, which runs on x86_64 workers (`engflow_rbe_x86_64`): this branch has selects
+# with both, so they must not match together.
+selects.config_setting_group(
     name = "engflow_rbe_aarch64",
     match_all = [
         ":engflow_rbe",
         ":linux_aarch64",
+        ":single_arch_build",
     ],
 )
 

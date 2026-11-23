@@ -39,6 +39,10 @@ if [[ "$(uname -s)" == "Linux" ]]; then
     if [[ -n "${TARGET_TRIPLE}" && "${TARGET_TRIPLE}" != *"$(uname -m)"* ]]; then
         # Cross-compiling: use native gcc for host tools so they run on the build machine.
         EXTRA_MAKE_ARGS+=("HOSTCC=gcc")
+    elif [[ " ${CFLAGS:-} " == *" -nostdinc "* ]]; then
+        # Native hermetic build with a toolchain that sets its header and library search paths
+        # itself (eg the hermetic GCC): the host tools need them too.
+        EXTRA_MAKE_ARGS+=("HOST_CFLAGS=${CFLAGS}" "HOST_LDFLAGS=${LDFLAGS}")
     elif [[ -n "${FUSE_LD_FLAG}" ]]; then
         # Native hermetic build: system linker may not exist; pass linker flags for host tools.
         EXTRA_MAKE_ARGS+=("HOST_LDFLAGS=${FUSE_LD_FLAG} ${SYSROOT_FLAG}")

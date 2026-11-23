@@ -87,7 +87,6 @@ for how to update or override dependencies.
     On Fedora (maybe also other red hat distros), run the following:
     ```console
     dnf install \
-        aspell-en \
         libatomic \
         libstdc++ \
         libstdc++-static \
@@ -115,7 +114,13 @@ for how to update or override dependencies.
     Envoy supports the following compiler toolchains:
 
     - `--config=clang` (recommended): Uses `clang` compiler with `libc++` (LLVM standard library)
-    - `--config=gcc`: Uses `gcc` compiler with `libstdc++` (GNU standard library)
+    - `--config=gcc`: Uses toolshed's hermetic GCC 13.4.0 with static `libstdc++` (GNU standard
+      library). No host GCC or binutils installation is needed. It builds Linux x86_64 targets on
+      Linux x86_64 only; on other platforms `--config=gcc` fails rather than falling back to Clang.
+      It links with the LLVM toolchain's LLD, against the same sysroot as Clang. To use a GCC
+      installed on the host instead, set `--repo_env=BAZEL_GCC_PATH=<prefix>` (eg `/usr`): the
+      prefix must contain `bin/gcc`, `bin/g++`, binutils, C/C++ headers and a static `libstdc++`.
+      That uses the host's libc and headers, and is not for remote execution.
     - No config flag: Uses system default compiler settings
 
     Note: While it's possible to use `clang` with `libstdc++` by setting CC/CXX environment variables without a config flag, this combination is not tested or supported.
@@ -129,7 +134,7 @@ for how to update or override dependencies.
     ### macOS
     On macOS, you'll need to install several dependencies. This can be accomplished via [Homebrew](https://brew.sh/):
     ```console
-    brew install coreutils wget libtool go bazelisk clang-format autoconf aspell
+    brew install coreutils wget libtool go bazelisk clang-format autoconf
     ```
     _notes_: `coreutils` is used for `realpath`, `gmd5sum` and `gsha256sum`
 
@@ -974,8 +979,10 @@ tools/gen_compilation_database.py --exclude_contrib
 
 # Running format linting without docker
 
-Note that if you run the `check_spelling.py` script you will need to have `aspell` installed.
-Prefer to run it via bazel as the environment will contain the dictionary used.
+Prefer to run the spelling check via bazel (`//tools/spelling:check_spelling_pedantic`), which uses
+the hermetic `hunspell` and `en_US` dictionary from `envoy_toolshed`. Running
+`tools/spelling/check_spelling_pedantic.py` directly needs `hunspell` and its `en_US` dictionary
+installed, or `HUNSPELL` and `HUNSPELL_DICT` set to a binary and a dictionary path.
 
 You can run clang-format directly, without docker:
 

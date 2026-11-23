@@ -40,7 +40,9 @@ build --override_repository=com_google_protobuf_protoc_linux_x86_64=%workspace%/
 build --override_repository=compatibility_proxy=%workspace%/ossm/vendor/compatibility_proxy
 build --override_repository=copy_directory_toolchains=%workspace%/ossm/vendor/copy_directory_toolchains
 build --override_repository=copy_to_directory_toolchains=%workspace%/ossm/vendor/copy_to_directory_toolchains
+build --override_repository=coreutils_toolchains=%workspace%/ossm/vendor/coreutils_toolchains
 build --override_repository=cpp2sky=%workspace%/ossm/vendor/cpp2sky
+build --override_repository=cve_pip3=%workspace%/ossm/vendor/cve_pip3
 build --override_repository=dd-trace-cpp=%workspace%/ossm/vendor/dd-trace-cpp
 build --override_repository=dev_cel=%workspace%/ossm/vendor/dev_cel
 build --override_repository=dev_pip3=%workspace%/ossm/vendor/dev_pip3
@@ -61,6 +63,7 @@ build --override_repository=grpc_httpjson_transcoding=%workspace%/ossm/vendor/gr
 build --override_repository=helly25_bzl=%workspace%/ossm/vendor/helly25_bzl
 build --override_repository=hessian2-codec=%workspace%/ossm/vendor/hessian2-codec
 build --override_repository=highway=%workspace%/ossm/vendor/highway
+build --override_repository=hunspell_toolchains=%workspace%/ossm/vendor/hunspell_toolchains
 build --override_repository=internal_platforms_do_not_use=%workspace%/ossm/vendor/internal_platforms_do_not_use
 build --override_repository=io_bazel_rules_go=%workspace%/ossm/vendor/io_bazel_rules_go
 build --override_repository=io_bazel_rules_nogo=%workspace%/ossm/vendor/io_bazel_rules_nogo
@@ -74,6 +77,8 @@ build --override_repository=luajit2=%workspace%/ossm/vendor/luajit2
 build --override_repository=msgpack-cxx=%workspace%/ossm/vendor/msgpack-cxx
 build --override_repository=nghttp2=%workspace%/ossm/vendor/nghttp2
 build --override_repository=nlohmann_json=%workspace%/ossm/vendor/nlohmann_json
+build --override_repository=oci_crane_toolchains=%workspace%/ossm/vendor/oci_crane_toolchains
+build --override_repository=oci_regctl_toolchains=%workspace%/ossm/vendor/oci_regctl_toolchains
 build --override_repository=ocp-diag-core=%workspace%/ossm/vendor/ocp-diag-core
 build --override_repository=opentelemetry-cpp=%workspace%/ossm/vendor/opentelemetry-cpp
 build --override_repository=opentelemetry-proto=%workspace%/ossm/vendor/opentelemetry-proto
@@ -83,6 +88,7 @@ build --override_repository=org_golang_x_sys=%workspace%/ossm/vendor/org_golang_
 build --override_repository=org_golang_x_text=%workspace%/ossm/vendor/org_golang_x_text
 build --override_repository=org_golang_x_tools=%workspace%/ossm/vendor/org_golang_x_tools
 build --override_repository=package_metadata=%workspace%/ossm/vendor/package_metadata
+build --override_repository=pigz_toolchains=%workspace%/ossm/vendor/pigz_toolchains
 build --override_repository=platforms=%workspace%/ossm/vendor/platforms
 build --override_repository=prometheus_metrics_model=%workspace%/ossm/vendor/prometheus_metrics_model
 build --override_repository=proto-converter=%workspace%/ossm/vendor/proto-converter
@@ -129,6 +135,7 @@ build --override_repository=rules_fuzzing_oss_fuzz=%workspace%/ossm/vendor/rules
 build --override_repository=rules_java=%workspace%/ossm/vendor/rules_java
 build --override_repository=rules_license=%workspace%/ossm/vendor/rules_license
 build --override_repository=rules_nodejs=%workspace%/ossm/vendor/rules_nodejs
+build --override_repository=rules_oci=%workspace%/ossm/vendor/rules_oci
 build --override_repository=rules_pkg=%workspace%/ossm/vendor/rules_pkg
 build --override_repository=rules_proto=%workspace%/ossm/vendor/rules_proto
 build --override_repository=rules_proto_grpc=%workspace%/ossm/vendor/rules_proto_grpc
@@ -165,3 +172,4 @@ build --override_repository=zipkin-api=%workspace%/ossm/vendor/zipkin-api
 build --override_repository=zlib=%workspace%/ossm/vendor/zlib
 build --override_repository=zlib-ng=%workspace%/ossm/vendor/zlib-ng
 build --override_repository=zstd=%workspace%/ossm/vendor/zstd
+build --override_repository=zstd_toolchains=%workspace%/ossm/vendor/zstd_toolchains
