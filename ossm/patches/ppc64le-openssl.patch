@@ -1,7 +1,7 @@
 diff --git a/bazel/dependency_imports.bzl b/bazel/dependency_imports.bzl
 --- a/bazel/dependency_imports.bzl
 +++ b/bazel/dependency_imports.bzl
-@@ -68,6 +68,15 @@
+@@ -154,6 +154,15 @@
          ],
          versions = [rust_common.default_version],
      )
@@ -16,7 +16,7 @@ diff --git a/bazel/dependency_imports.bzl b/bazel/dependency_imports.bzl
 +    )
      rules_rust_dependencies()
      rust_register_toolchains(
-         versions = ["1.88.0"],
+         sha256s = RUST_SHA256S,
 diff --git a/bazel/repositories.bzl b/bazel/repositories.bzl
 --- a/bazel/repositories.bzl
 +++ b/bazel/repositories.bzl
