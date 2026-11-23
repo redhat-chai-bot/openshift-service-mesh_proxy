@@ -37,8 +37,8 @@ diff --git a/bazel/repositories_extra.bzl b/bazel/repositories_extra.bzl
  load("@toolchains_llvm//toolchain:deps.bzl", "bazel_toolchain_dependencies")
  load("//bazel:repositories.bzl", "external_http_archive")
  load("//bazel/external/cargo:crates.bzl", "raze_fetch_remote_crates")
-@@ -43,18 +43,6 @@ def envoy_dependencies_extra(
-     crate_repositories()
+@@ -57,18 +57,6 @@ def envoy_dependencies_extra(
+     raze_fetch_remote_crates()
      py_repositories()
 
 -    # Registers underscored Python minor version - eg `python3_10`
