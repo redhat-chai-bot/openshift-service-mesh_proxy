@@ -1,8 +1,8 @@
 diff --git a/ossm/vendor/proxy_wasm_cpp_host/bazel/BUILD b/ossm/vendor/proxy_wasm_cpp_host/bazel/BUILD
-index 15f323fa7..23f677cb3 100644
+index 58b4aed78..4db441139 100644
 --- a/ossm/vendor/proxy_wasm_cpp_host/bazel/BUILD
 +++ b/ossm/vendor/proxy_wasm_cpp_host/bazel/BUILD
-@@ -52,21 +52,8 @@ config_setting(
+@@ -53,21 +53,8 @@ config_setting(
  )
 
  config_setting(
@@ -24,4 +24,4 @@ index 15f323fa7..23f677cb3 100644
 +    values = {"define": "crypto=system"},
  )
 
- exports_files(["tsan_suppressions.txt"])
+ # V8 library with pointer compression disabled using V8's Starlark transition.
