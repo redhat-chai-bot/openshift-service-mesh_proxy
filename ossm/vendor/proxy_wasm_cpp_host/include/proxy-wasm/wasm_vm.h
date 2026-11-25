@@ -29,6 +29,25 @@
 
 namespace proxy_wasm {
 
+#ifdef PROXY_WASM_PLATFORM
+#elif defined(__linux__) && defined(__x86_64__)
+#define PROXY_WASM_PLATFORM "linux_x86_64"
+#elif defined(__linux__) && defined(__aarch64__)
+#define PROXY_WASM_PLATFORM "linux_aarch64"
+#elif defined(__linux__) && (defined(__ppc64le__) || defined(__PPC64LE__))
+#define PROXY_WASM_PLATFORM "linux_ppc64le"
+#elif defined(__linux__) && defined(__s390x__)
+#define PROXY_WASM_PLATFORM "linux_s390x"
+#elif defined(__APPLE__) && defined(__x86_64__)
+#define PROXY_WASM_PLATFORM "macos_x86_64"
+#elif defined(__APPLE__) && defined(__arm64__)
+#define PROXY_WASM_PLATFORM "macos_arm64"
+#elif defined(_WIN64) && defined(_M_X64)
+#define PROXY_WASM_PLATFORM "windows_x64"
+#else
+#define PROXY_WASM_PLATFORM ""
+#endif
+
 class ContextBase;
 
 // These are templates and its helper for constructing signatures of functions calling into Wasm
@@ -67,12 +86,21 @@ template <size_t N>
 using WasmCallVoid = std::function<WasmCallInFuncType<N, void, ContextBase *, Word>>;
 template <size_t N>
 using WasmCallWord = std::function<WasmCallInFuncType<N, Word, ContextBase *, Word>>;
+// Callback used to test arg passing from host to wasm.
+using WasmCall_WWlfd = std::function<Word(ContextBase *, Word, uint64_t, float, double)>;
+// Types used to test return values. Floats are passed as parameters as these
+// do not conflict with ProxyWasm ABI signatures.
+using WasmCall_lf = std::function<uint64_t(ContextBase *, float)>;
+using WasmCall_fff = std::function<float(ContextBase *, float, float)>;
+using WasmCall_dfff = std::function<double(ContextBase *, float, float, float)>;
 
 #define FOR_ALL_WASM_VM_EXPORTS(_f)                                                                \
   _f(proxy_wasm::WasmCallVoid<0>) _f(proxy_wasm::WasmCallVoid<1>) _f(proxy_wasm::WasmCallVoid<2>)  \
       _f(proxy_wasm::WasmCallVoid<3>) _f(proxy_wasm::WasmCallVoid<5>)                              \
-          _f(proxy_wasm::WasmCallWord<1>) _f(proxy_wasm::WasmCallWord<2>)                          \
-              _f(proxy_wasm::WasmCallWord<3>)
+          _f(proxy_wasm::WasmCallWord<0>) _f(proxy_wasm::WasmCallWord<1>)                          \
+              _f(proxy_wasm::WasmCallWord<2>) _f(proxy_wasm::WasmCallWord<3>)                      \
+                  _f(proxy_wasm::WasmCall_WWlfd) _f(proxy_wasm::WasmCall_lf)                       \
+                      _f(proxy_wasm::WasmCall_fff) _f(proxy_wasm::WasmCall_dfff)
 
 // These are templates and its helper for constructing signatures of functions callbacks from Wasm
 // VMs.
@@ -114,23 +142,31 @@ using WasmCallback_WWmW = Word (*)(Word, uint64_t, Word);
 using WasmCallback_WWWWWWllWW = Word (*)(Word, Word, Word, Word, Word, int64_t, int64_t, Word,
                                          Word);
 using WasmCallback_dd = double (*)(double);
+// Additional callback types for WASIp1 functions
+using WasmCallback_WWWWmm = Word (*)(Word, Word, Word, Word, uint64_t, uint64_t);
+using WasmCallback_WWWWmmW = Word (*)(Word, Word, Word, Word, uint64_t, uint64_t, Word);
+using WasmCallback_WWmm = Word (*)(Word, uint64_t, uint64_t);
+using WasmCallback_WWmmW = Word (*)(Word, uint64_t, uint64_t, Word);
+using WasmCallback_WWWWmW = Word (*)(Word, Word, Word, uint64_t, Word);
 
 #define FOR_ALL_WASM_VM_IMPORTS(_f)                                                                \
   _f(proxy_wasm::WasmCallbackVoid<0>) _f(proxy_wasm::WasmCallbackVoid<1>)                          \
       _f(proxy_wasm::WasmCallbackVoid<2>) _f(proxy_wasm::WasmCallbackVoid<3>)                      \
           _f(proxy_wasm::WasmCallbackVoid<4>) _f(proxy_wasm::WasmCallbackWord<0>)                  \
               _f(proxy_wasm::WasmCallbackWord<1>) _f(proxy_wasm::WasmCallbackWord<2>)              \
-                  _f(proxy_wasm::WasmCallbackWord<3>) _f(proxy_wasm::WasmCallbackWord<4>)          \
-                      _f(proxy_wasm::WasmCallbackWord<5>) _f(proxy_wasm::WasmCallbackWord<6>)      \
-                          _f(proxy_wasm::WasmCallbackWord<7>) _f(proxy_wasm::WasmCallbackWord<8>)  \
-                              _f(proxy_wasm::WasmCallbackWord<9>)                                  \
-                                  _f(proxy_wasm::WasmCallbackWord<10>)                             \
-                                      _f(proxy_wasm::WasmCallbackWord<12>)                         \
-                                          _f(proxy_wasm::WasmCallback_WWl)                         \
-                                              _f(proxy_wasm::WasmCallback_WWlWW)                   \
-                                                  _f(proxy_wasm::WasmCallback_WWm)                 \
-                                                      _f(proxy_wasm::WasmCallback_WWmW)            \
-                                                          _f(proxy_wasm::WasmCallback_WWWWWWllWW)  \
+                  _f(proxy_wasm::WasmCallbackWord<3>) _f(proxy_wasm::WasmCallbackWord<4>) _f(      \
+                      proxy_wasm::WasmCallbackWord<5>) _f(proxy_wasm::WasmCallbackWord<6>)         \
+                      _f(proxy_wasm::WasmCallbackWord<7>) _f(proxy_wasm::WasmCallbackWord<8>) _f(  \
+                          proxy_wasm::WasmCallbackWord<9>) _f(proxy_wasm::WasmCallbackWord<10>)    \
+                          _f(proxy_wasm::WasmCallbackWord<12>) _f(proxy_wasm::WasmCallback_WWl)    \
+                              _f(proxy_wasm::WasmCallback_WWlWW) _f(proxy_wasm::WasmCallback_WWm)  \
+                                  _f(proxy_wasm::WasmCallback_WWmW)                                \
+                                      _f(proxy_wasm::WasmCallback_WWWWWWllWW)                      \
+                                          _f(proxy_wasm::WasmCallback_WWWWmm)                      \
+                                              _f(proxy_wasm::WasmCallback_WWWWmmW)                 \
+                                                  _f(proxy_wasm::WasmCallback_WWmm)                \
+                                                      _f(proxy_wasm::WasmCallback_WWmmW)           \
+                                                          _f(proxy_wasm::WasmCallback_WWWWmW)      \
                                                               _f(proxy_wasm::WasmCallback_dd)
 
 enum class Cloneable {
@@ -217,6 +253,14 @@ public:
    */
   virtual bool load(std::string_view bytecode, std::string_view precompiled,
                     const std::unordered_map<uint32_t, std::string> &function_names) = 0;
+
+  /**
+   * Serializes the loaded wasm module to a string. Returns true on success. The resulting string
+   * may be saved to storage and passed as a precompiled wasm module to another instance.
+   * @param original_bytecode the bytecode to append the serialized section to.
+   * @return a string containing the serialized wasm module, or nullopt if serialization failed.
+   */
+  virtual std::optional<std::string> serialize(std::string_view original_bytecode) = 0;
 
   /**
    * Link the WASM code to the host-provided functions, e.g. the ABI. Prior to linking, the module

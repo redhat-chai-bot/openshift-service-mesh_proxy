@@ -226,6 +226,8 @@ protected:
   WasmCallVoid<0> _start_;      /* WASI command (Emscripten v1.39.0+, TinyGo) */
 
   WasmCallWord<2> main_;
+  WasmCallWord<0> __main_void_;
+
   WasmCallWord<1> malloc_;
 
   // Calls into the VM.
@@ -398,7 +400,9 @@ inline void *WasmBase::allocMemory(uint64_t size, uint64_t *address) {
              // logging (stdout/stderr)
              "wasi_unstable.fd_write", "wasi_snapshot_preview1.fd_write",
              // time
-             "wasi_unstable.clock_time_get", "wasi_snapshot_preview1.clock_time_get"});
+             "wasi_unstable.clock_time_get", "wasi_snapshot_preview1.clock_time_get",
+             // go runtime gc sleep
+             "wasi_unstable.poll_oneoff", "wasi_snapshot_preview1.poll_oneoff"});
   Word a = malloc_(vm_context(), size);
   wasm_vm_->setRestrictedCallback(false);
   if (!a.u64_) {

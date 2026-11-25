@@ -4437,7 +4437,6 @@ genrule(
            --output_base $(@D)/src/inspector
     """,
     toolchains = ["@rules_python//python:current_py_toolchain"],
-    local = 1,
     message = "Generating inspector files",
     tools = [
         ":code_generator",

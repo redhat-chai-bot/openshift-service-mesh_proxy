@@ -429,6 +429,11 @@ TEST_P(NetworkExtensionDiscoveryIntegrationTest, BasicFailWithoutDefault) {
   test_server_->waitForCounterGe(
       "extension_config_discovery.network_filter." + filter_name_ + ".config_fail", 1);
 
+  // The config failure completes warming, but the listener only starts listening once the
+  // workers add it, so wait for that before connecting.
+  test_server_->waitUntilListenersReady();
+  test_server_->waitForGaugeGe("listener_manager.workers_started", 1);
+
   // New connections will close since there's no valid configuration.
   IntegrationTcpClientPtr tcp_client = makeTcpConnection(lookupPort(port_name_));
   auto result = tcp_client->write(data_);
@@ -783,6 +788,11 @@ TEST_P(NetworkExtensionDiscoveryIntegrationTest, ConfigUpdateDoesNotApplyToExist
   sendXdsResponse(filter_name_, "1", bytes_to_drain);
   test_server_->waitForCounterGe(
       "extension_config_discovery.network_filter." + filter_name_ + ".config_reload", 1);
+
+  // The config update completes warming, but the listener only starts listening once the
+  // workers add it, so wait for that before connecting.
+  test_server_->waitUntilListenersReady();
+  test_server_->waitForGaugeGe("listener_manager.workers_started", 1);
 
   IntegrationTcpClientPtr tcp_client = makeTcpConnection(lookupPort(port_name_));
   FakeRawConnectionPtr fake_upstream_connection;

@@ -137,10 +137,8 @@ def proxy_wasm_cpp_host_repositories():
     maybe(
         http_archive,
         name = "rules_rust",
-        integrity = "sha256-yKqAbPYGZnmsI0YyQe6ArWkiZdrQRl9RERy74wuJA1I=",
-        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.68.1/rules_rust-0.68.1.tar.gz"],
-        patches = ["@proxy_wasm_cpp_host//bazel/external:rules_rust.patch"],
-        patch_args = ["-p1"],
+        integrity = "sha256-u8dkwlLQYSgbI1knek1GSA4tz69yr8HObgCtpYzL/Uw=",
+        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.69.0/rules_rust-0.69.0.tar.gz"],
     )
 
     # Core deps. Keep them updated.
@@ -151,9 +149,9 @@ def proxy_wasm_cpp_host_repositories():
     maybe(
         http_archive,
         name = "com_google_absl",
-        sha256 = "9b7a064305e9fd94d124ffa6cc358592eb42b5da588fb4e07d09254aa40086db",
-        strip_prefix = "abseil-cpp-20250512.1",
-        urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20250512.1.tar.gz"],
+        sha256 = "1692f77d1739bacf3f94337188b78583cf09bab7e420d2dc6c5605a4f86785a1",
+        strip_prefix = "abseil-cpp-20250814.1",
+        urls = ["https://github.com/abseil/abseil-cpp/archive/20250814.1.tar.gz"],
     )
 
     maybe(
@@ -211,22 +209,15 @@ def proxy_wasm_cpp_host_repositories():
     # V8 with dependencies.
 
     maybe(
-        git_repository,
+        http_archive,
         name = "v8",
-        # 13.8.258.26
-        commit = "de9d0f8b56ae61896e4d2ac577fc589efb14f87d",
-        remote = "https://chromium.googlesource.com/v8/v8",
-        shallow_since = "1752074621 -0700",
+        urls = ["https://github.com/v8/v8/archive/refs/tags/14.4.258.16.tar.gz"],
+        integrity = "sha256-igwEEi6kcb2q7EodzjJasjCx/6LRMiFTVWfDKcNB+Xw=",
+        strip_prefix = "v8-14.4.258.16",
         patches = [
             "@proxy_wasm_cpp_host//bazel/external:v8.patch",
         ],
         patch_args = ["-p1"],
-        patch_cmds = [
-            "find ./src ./include -type f -exec sed -i.bak -e 's!#include \"third_party/simdutf/simdutf.h\"!#include \"simdutf.h\"!' {} \\;",
-            "find ./src ./include -type f -exec sed -i.bak -e 's!#include \"third_party/fp16/src/include/fp16.h\"!#include \"fp16.h\"!' {} \\;",
-            "find ./src ./include -type f -exec sed -i.bak -e 's!#include \"third_party/dragonbox/src/include/dragonbox/dragonbox.h\"!#include \"dragonbox/dragonbox.h\"!' {} \\;",
-            "find ./src ./include -type f -exec sed -i.bak -e 's!#include \"third_party/fast_float/src/include/fast_float/!#include \"fast_float/!' {} \\;",
-        ],
         repo_mapping = {
             "@abseil-cpp": "@com_google_absl",
         },
@@ -340,14 +331,40 @@ def proxy_wasm_cpp_host_repositories():
     )
 
     # WasmEdge with dependencies.
+    # Using native Bazel cc_library rules based on Bazel Central Registry (BCR) definitions
+    # to avoid CMake FetchContent network access during build.
+
+    # fmt dependency for spdlog (version 11.0.2, based on BCR)
+    # https://github.com/bazelbuild/bazel-central-registry/tree/main/modules/fmt/11.0.2
+    maybe(
+        http_archive,
+        name = "com_github_fmtlib_fmt",
+        sha256 = "6cb1e6d37bdcb756dbbe59be438790db409cdb4868c66e888d5df9f13f7c027f",
+        strip_prefix = "fmt-11.0.2",
+        urls = ["https://github.com/fmtlib/fmt/archive/refs/tags/11.0.2.tar.gz"],
+        build_file = "@proxy_wasm_cpp_host//bazel/external:fmt.BUILD",
+    )
+
+    # spdlog dependency for WasmEdge (version 1.13.0, based on BCR)
+    # https://github.com/bazelbuild/bazel-central-registry/tree/main/modules/spdlog/1.13.0
+    maybe(
+        http_archive,
+        name = "com_github_gabime_spdlog",
+        sha256 = "534f2ee1a4dcbeb22249856edfb2be76a1cf4f708a20b0ac2ed090ee24cfdbc9",
+        strip_prefix = "spdlog-1.13.0",
+        urls = ["https://github.com/gabime/spdlog/archive/refs/tags/v1.13.0.tar.gz"],
+        build_file = "@proxy_wasm_cpp_host//bazel/external:spdlog.BUILD",
+    )
 
     maybe(
         http_archive,
         name = "com_github_wasmedge_wasmedge",
         build_file = "@proxy_wasm_cpp_host//bazel/external:wasmedge.BUILD",
-        sha256 = "7ab8a0df37c8d282ecff72d0f0bff8db63fd92df1645d5a014a9dbed4b7f9025",
-        strip_prefix = "WasmEdge-proxy-wasm-0.13.1",
-        url = "https://github.com/WasmEdge/WasmEdge/archive/refs/tags/proxy-wasm/0.13.1.tar.gz",
+        sha256 = "2354d90a67e3eb396179663bdc0b457abbbc70dca967ec4528f211599a49f62a",
+        strip_prefix = "WasmEdge-0.16.1",
+        url = "https://github.com/WasmEdge/WasmEdge/archive/refs/tags/0.16.1.tar.gz",
+        patches = ["@proxy_wasm_cpp_host//bazel/external:wasmedge.patch"],
+        patch_args = ["-p1"],
     )
 
     # Wasmtime with dependencies.
@@ -356,7 +373,9 @@ def proxy_wasm_cpp_host_repositories():
         http_archive,
         name = "com_github_bytecodealliance_wasmtime",
         build_file = "@proxy_wasm_cpp_host//bazel/external:wasmtime.BUILD",
-        sha256 = "2ccb49bb3bfa4d86907ad4c80d1147aef6156c7b6e3f7f14ed02a39de9761155",
-        strip_prefix = "wasmtime-24.0.0",
-        url = "https://github.com/bytecodealliance/wasmtime/archive/v24.0.0.tar.gz",
+        sha256 = "a95cf57008b87dbe1cdaba220ea58b75bb0b53369e166fe21e729011bd25e9e8",
+        strip_prefix = "wasmtime-45.0.2",
+        url = "https://github.com/bytecodealliance/wasmtime/archive/v45.0.2.tar.gz",
+        patches = ["@proxy_wasm_cpp_host//bazel/external:prefixed_wasmtime.patch"],
+        patch_args = ["-p1"],
     )

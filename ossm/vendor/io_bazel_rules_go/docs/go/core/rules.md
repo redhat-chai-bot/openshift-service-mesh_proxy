@@ -193,7 +193,7 @@ of the golang SDK.
 | <a id="go_cross_binary-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="go_cross_binary-compilation_mode"></a>compilation_mode |  The compilation_mode to use for compiling the `target`. Must be one of `dbg`, `fastbuild`, or `opt`. If unspecified, use the same compilation mode as the original `go_binary` rule.   | String | optional |  `""`  |
 | <a id="go_cross_binary-platform"></a>platform |  The platform to cross compile the `target` for. If unspecified, the `target` will be compiled with the same platform as it would've with the original `go_binary` rule.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
-| <a id="go_cross_binary-sdk_version"></a>sdk_version |  The golang SDK version to use for compiling the `target`. Supports specifying major, minor, and/or patch versions, eg. `"1"`, `"1.17"`, or `"1.17.1"`. The first Go SDK provider installed in the repo's workspace (via `go_download_sdk`, `go_wrap_sdk`, etc) that matches the specified version will be used for compiling the given `target`. If unspecified, the `target` will be compiled with the same SDK as it would've with the original `go_binary` rule. Transitions `target` by changing the `--@io_bazel_rules_go//go/toolchain:sdk_version` build flag to the value provided for `sdk_version` here.   | String | optional |  `""`  |
+| <a id="go_cross_binary-sdk_version"></a>sdk_version |  The golang SDK version to use for compiling the `target`. Supports specifying major, minor, and/or patch versions, eg. `"1"`, `"1.20"`, or `"1.20.1"`. The first Go SDK provider installed in the repo's workspace (via `go_download_sdk`, `go_wrap_sdk`, etc) that matches the specified version will be used for compiling the given `target`. If unspecified, the `target` will be compiled with the same SDK as it would've with the original `go_binary` rule. Transitions `target` by changing the `--@io_bazel_rules_go//go/toolchain:sdk_version` build flag to the value provided for `sdk_version` here.   | String | optional |  `""`  |
 | <a id="go_cross_binary-target"></a>target |  Go binary target to transition to the given platform and/or sdk_version.   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
 
 
@@ -297,6 +297,11 @@ target configuration and neither the tools nor the code they potentially
 generate should be subject to Nogo's static analysis. This is helpful, for example, so
 a tool isn't built as a shared library with race instrumentation. This acts as an
 intermediate rule that allows users to apply these transitions.
+
+The '//go/config:static' and '//go/config:pure' settings are an exception: they are
+inherited from the value set on the command line, as they determine whether the tool
+can run on the execution platform. The 'static' and 'pure' attributes of an enclosing
+rule are still reset.
 
 **ATTRIBUTES**
 
